@@ -70,11 +70,6 @@ namespace CrocsItems.Equipment
             Hooks();
         }
 
-        public string d(float f)
-        {
-            return (f * 100f).ToString() + "%";
-        }
-
         protected void CreateEquipment()
         {
             EquipmentDef = ScriptableObject.CreateInstance<EquipmentDef>();

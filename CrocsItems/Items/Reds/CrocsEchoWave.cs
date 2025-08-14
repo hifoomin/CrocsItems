@@ -19,9 +19,9 @@ namespace CrocsItems.Items.Reds
 
         public override string ItemPickupDesc => "Sprinting builds up movement speed that can be discharged for massive impact damage.";
 
-        public override string ItemFullDescription => "Sprinting builds up to <style=cIsUtility>100% movement speed</style>. <style=cIsUtility>Ramming</style> into an enemy while sprinting deals up to <style=cIsDamage>3000%</style> <style=cStack>(+3000% per stack)</style> damage based on movement speed.";
+        public override string ItemFullDescription => "Sprinting builds up to <style=cIsUtility>100% movement speed</style>. <style=cIsUtility>Ramming</style> into an enemy while sprinting deals up to <style=cIsDamage>3000%</style> <style=cStack>(+3000% per stack) damage</style> based on movement speed.";
 
-        public override string ItemLore => "this item needs lore !";
+        public override string ItemLore => "This item should have lore.";
 
         public override ItemTier Tier => ItemTier.Tier3;
 
@@ -56,6 +56,7 @@ namespace CrocsItems.Items.Reds
             speedBuff.ignoreGrowthNectar = false;
             speedBuff.isDOT = false;
             speedBuff.isCooldown = false;
+            speedBuff.name = "Crocs Echo Wave Movement Speed - 1% Per";
 
             ContentAddition.AddBuffDef(speedBuff);
         }
@@ -96,18 +97,17 @@ namespace CrocsItems.Items.Reds
     {
         public float timer;
         public float buffChangeInterval = 0.1f;
-        public int buffCountToChange = 5;
+        public int buffCountToChange = 2;
 
         public int maxBuffCount = 100;
-        public int minBuffCount = 80;
-        public int buffCountAfterImpact = 40;
+        public int minBuffCount = 100;
+        public int buffCountAfterImpact = 25;
         public int buffCount;
         public float minImpactDamage = 10f;
         public float maxImpactDamage = 30f;
         public float minStunDuration = 1f;
         public float maxStunDuration = 4f;
 
-        public OverlapAttack checkerOverlap;
         public OverlapAttack attackerOverlap;
 
         public ModelLocator modelLocator;
@@ -115,16 +115,13 @@ namespace CrocsItems.Items.Reds
         public GameObject hitBoxObject;
         public HitBoxGroup hitBoxGroup;
         public HitBox hitBox;
-        public List<HurtBox> hitResults = new();
-        public KinematicCharacterMotor kinematicCharacterMotor;
         public float collisionDisableTime = 0.5f;
         public int cachedLayer;
+        public bool successfullyHit = false;
 
         public void Start()
         {
             cachedLayer = gameObject.layer;
-
-            kinematicCharacterMotor = GetComponent<KinematicCharacterMotor>();
 
             modelLocator = GetComponent<ModelLocator>();
             modelTransform = modelLocator?.modelTransform;
@@ -154,7 +151,7 @@ namespace CrocsItems.Items.Reds
                 {
                     buffCount += buffCountToChange;
                     buffCount = Mathf.Min(buffCount, maxBuffCount);
-                    if (buffCount > minBuffCount)
+                    if (buffCount >= minBuffCount)
                     {
                         CheckImpact();
                     }
@@ -174,7 +171,7 @@ namespace CrocsItems.Items.Reds
         public void CheckImpact()
         {
             var sprintingSpeed = 7f * 1.45f;
-            var scaledDamage = Util.Remap(sprintingSpeed, sprintingSpeed, sprintingSpeed * 4f, minImpactDamage * stack, maxImpactDamage * stack); // about 50% effectiveness with this item alone -- should be doing nearly 2000% impact damage
+            var scaledDamage = Util.Remap(body.moveSpeed, sprintingSpeed, sprintingSpeed * 4f, minImpactDamage * stack, maxImpactDamage * stack); // about 50% effectiveness with this item alone -- should be doing nearly 2000% impact damage
             var finalDamage = scaledDamage;
             attackerOverlap = new()
             {
@@ -194,25 +191,23 @@ namespace CrocsItems.Items.Reds
             hitBoxObject.transform.forward = body.inputBank.moveVector;
             hitBoxObject.transform.position = modelTransform.position;
 
-            if (attackerOverlap.Fire())
+            successfullyHit = attackerOverlap.Fire();
+            if (successfullyHit)
             {
-                EffectManager.SimpleEffect(EntityStates.Loader.LoaderMeleeAttack.overchargeImpactEffectPrefab, transform.position, transform.rotation, true);
-                StartCoroutine(ToggleCollision());
+                // Main.ModLogger.LogError("attack overlap fire is true");
+                buffCount = buffCountAfterImpact;
                 body.SetBuffCount(CrocsEchoWave.speedBuff.buffIndex, buffCountAfterImpact);
+                // body.SetBuffCount(CrocsEchoWave.speedBuff.buffIndex, 0);
+                SpawnVFX();
             }
         }
 
-        public IEnumerator ToggleCollision()
+        public void SpawnVFX()
         {
-            if (!kinematicCharacterMotor)
-            {
-                yield break;
-            }
-            gameObject.layer = LayerIndex.playerFakeActor.intVal;
-            kinematicCharacterMotor.RebuildCollidableLayers();
-            yield return new WaitForSeconds(collisionDisableTime);
-            gameObject.layer = cachedLayer;
-            kinematicCharacterMotor.RebuildCollidableLayers();
+            Util.PlaySound("Play_grandParent_attack1_boulderSmall_impact", gameObject);
+            Util.PlaySound("Play_vulture_attack1_impact", gameObject);
+            Util.PlaySound("Play_vulture_attack1_impact", gameObject);
+            Util.PlaySound("Play_env_desert_wind_gust", gameObject);
         }
     }
 }
