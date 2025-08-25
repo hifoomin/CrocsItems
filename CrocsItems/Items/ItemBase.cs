@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using R2API;
 using RoR2;
 using UnityEngine;
+using UnityEngine.TextCore.Text;
 
 namespace CrocsItems.Items
 {
@@ -34,13 +36,17 @@ namespace CrocsItems.Items
 
         public abstract GameObject ItemModel { get; }
         public abstract Sprite ItemIcon { get; }
+        public abstract bool IsCroc { get; }
 
         public virtual bool CanRemove { get; } = true;
+        public virtual bool IsJibbit { get; } = false;
 
         public virtual float modelPanelParametersMinDistance { get; } = 2f;
         public virtual float modelPanelParametersMaxDistance { get; } = 10f;
 
         public ItemDef ItemDef;
+        public static List<ItemDef> jibbitzList = new();
+        public static List<ItemDef> crocsList = new();
 
         public static bool DefaultEnabledCallback(ItemBase self)
         {
@@ -75,13 +81,13 @@ namespace CrocsItems.Items
             // var temporaryItemModel = Main.bundle.LoadAsset<GameObject>("TempHolder.prefab");
 
             ItemDef = ScriptableObject.CreateInstance<ItemDef>();
-            ItemDef.name = "ITEM_CROCSITEMS" + ItemLangTokenName;
-            ItemDef.nameToken = "ITEM_CROCSITEMS" + ItemLangTokenName + "_NAME";
-            ItemDef.pickupToken = "ITEM_CROCSITEMS" + ItemLangTokenName + "_PICKUP";
-            ItemDef.descriptionToken = "ITEM_CROCSITEMS" + ItemLangTokenName + "_DESCRIPTION";
-            ItemDef.loreToken = "ITEM_CROCSITEMS" + ItemLangTokenName + "_LORE";
-            // ItemDef.pickupModelPrefab = ItemModel ?? temporaryItemModel;
-            // ItemDef.pickupIconSprite = ItemIcon ?? temporaryItemIcon;
+            ItemDef.name = "ITEM_CROCSITEMS_" + ItemLangTokenName;
+            ItemDef.nameToken = "ITEM_CROCSITEMS_" + ItemLangTokenName + "_NAME";
+            ItemDef.pickupToken = "ITEM_CROCSITEMS_" + ItemLangTokenName + "_PICKUP";
+            ItemDef.descriptionToken = "ITEM_CROCSITEMS_" + ItemLangTokenName + "_DESCRIPTION";
+            ItemDef.loreToken = "ITEM_CROCSITEMS_" + ItemLangTokenName + "_LORE";
+            ItemDef.pickupModelPrefab = ItemModel ?? null;
+            ItemDef.pickupIconSprite = ItemIcon ?? null;
             ItemDef.hidden = false;
             ItemDef.canRemove = CanRemove;
 #pragma warning disable
@@ -92,10 +98,10 @@ namespace CrocsItems.Items
                 ItemDef.tags = ItemTags;
             }
 
-            LanguageAPI.Add("ITEM_CROCSITEMS" + ItemLangTokenName + "_NAME", ItemName);
-            LanguageAPI.Add("ITEM_CROCSITEMS" + ItemLangTokenName + "_PICKUP", ItemPickupDesc);
-            LanguageAPI.Add("ITEM_CROCSITEMS" + ItemLangTokenName + "_DESCRIPTION", ItemFullDescription);
-            LanguageAPI.Add("ITEM_CROCSITEMS" + ItemLangTokenName + "_LORE", ItemLore);
+            LanguageAPI.Add("ITEM_CROCSITEMS_" + ItemLangTokenName + "_NAME", ItemName);
+            LanguageAPI.Add("ITEM_CROCSITEMS_" + ItemLangTokenName + "_PICKUP", ItemPickupDesc);
+            LanguageAPI.Add("ITEM_CROCSITEMS_" + ItemLangTokenName + "_DESCRIPTION", ItemFullDescription);
+            LanguageAPI.Add("ITEM_CROCSITEMS_" + ItemLangTokenName + "_LORE", ItemLore);
 
             /*
             if (AchievementName != string.Empty && AchievementDesc != string.Empty)
@@ -107,18 +113,22 @@ namespace CrocsItems.Items
             }
             */
 
-            /*
             if (ItemModel != null)
             {
                 CreateModelPanelParameters(ItemModel);
             }
-            else
-            {
-                CreateModelPanelParameters(temporaryItemModel);
-            }
-            */
 
             ItemAPI.Add(new CustomItem(ItemDef, CreateItemDisplayRules()));
+
+            if (IsJibbit)
+            {
+                jibbitzList.Add(ItemDef);
+            }
+
+            if (IsCroc)
+            {
+                crocsList.Add(ItemDef);
+            }
         }
 
         private void CreateModelPanelParameters(GameObject itemModel)
@@ -162,6 +172,52 @@ namespace CrocsItems.Items
             if (!body || !body.inventory) { return 0; }
 
             return body.inventory.GetItemCount(ItemDef);
+        }
+
+        public bool HasAnyJibbit(CharacterBody body)
+        {
+            bool hasAnyJibbit = false;
+
+            var inventory = body.inventory;
+            if (!body || !inventory)
+            {
+                return hasAnyJibbit;
+            }
+
+            for (int i = 0; i < jibbitzList.Count; i++)
+            {
+                var jibbit = jibbitzList[i];
+                if (inventory.GetItemCount(jibbit.itemIndex) > 0)
+                {
+                    hasAnyJibbit = true;
+                    break;
+                }
+            }
+
+            return hasAnyJibbit;
+        }
+
+        public static bool HasAnyCrocs(CharacterBody body)
+        {
+            bool hasAnyCrocs = false;
+
+            var inventory = body.inventory;
+            if (!body || !inventory)
+            {
+                return hasAnyCrocs;
+            }
+
+            for (int i = 0; i < crocsList.Count; i++)
+            {
+                var crocs = crocsList[i];
+                if (inventory.GetItemCount(crocs.itemIndex) > 0)
+                {
+                    hasAnyCrocs = true;
+                    break;
+                }
+            }
+
+            return hasAnyCrocs;
         }
 
         public string GetConfName()

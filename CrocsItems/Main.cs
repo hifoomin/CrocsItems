@@ -11,7 +11,9 @@ using CrocsItems.Items;
 using HarmonyLib;
 using R2API;
 using R2API.ContentManagement;
+using RoR2;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 
 [assembly: HG.Reflection.SearchableAttribute.OptInAttribute]
 
@@ -47,6 +49,7 @@ namespace CrocsItems
             ModLogger = base.Logger;
 
             SetUpConfig();
+            SetUpAssets();
             SetUpContent();
         }
 
@@ -68,6 +71,27 @@ namespace CrocsItems
 
             AutoRunCollector.HandleAutoRun();
             ConfigManager.HandleConfigAttributes(Assembly.GetExecutingAssembly(), Config);
+        }
+
+        public void SetUpAssets()
+        {
+            // var cloudRemapShader = Addressables.LoadAssetAsync<Shader>("bbffe49749c91724d819563daf91445d").WaitForCompletion();
+            // guid is hg cloud remap
+            var hgStandardShader = Addressables.LoadAssetAsync<Shader>("48dca5b99d113b8d11006bab44295342").WaitForCompletion();
+            // guid is hg standard
+
+            bundle = AssetBundle.LoadFromFile(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(Instance.Info.Location), "crocsitems"));
+
+            var allAssetBundleMaterials = bundle.LoadAllAssets<Material>();
+            foreach (var material in allAssetBundleMaterials)
+            {
+                switch (material.shader.name)
+                {
+                    case "StubbedRoR2/Base/Shaders/HGStandard":
+                        material.shader = hgStandardShader;
+                        break;
+                }
+            }
         }
 
         public void SetUpContent()
@@ -95,12 +119,14 @@ namespace CrocsItems
             }
 
             ScanTypes<InteractableBase>((x) =>
-           {
-               if (LoadInteractable(x))
-               {
-                   x.Init();
-               }
-           });
+            {
+                if (LoadInteractable(x))
+                {
+                    x.Init();
+                }
+            });
+
+            JibbitzDropBehavior.Init();
         }
 
         public bool LoadEquipment(EquipmentBase equipment)

@@ -19,7 +19,7 @@ namespace CrocsItems.Items.Reds
 
         public override string ItemPickupDesc => "Sprinting builds up movement speed that can be discharged for massive impact damage.";
 
-        public override string ItemFullDescription => "Sprinting builds up to <style=cIsUtility>100% movement speed</style>. <style=cIsUtility>Ramming</style> into an enemy while sprinting deals up to <style=cIsDamage>3000%</style> <style=cStack>(+3000% per stack) damage</style> based on movement speed.";
+        public override string ItemFullDescription => "Sprinting builds up to <style=cIsUtility>100% movement speed</style>. <style=cIsDamage>Ramming</style> into an enemy while sprinting deals up to <style=cIsDamage>3000%</style> <style=cStack>(+3000% per stack)</style> <style=cIsDamage>damage</style> based on movement speed.";
 
         public override string ItemLore => "This item should have lore.";
 
@@ -27,9 +27,11 @@ namespace CrocsItems.Items.Reds
 
         public override ItemTag[] ItemTags => [ItemTag.AIBlacklist, ItemTag.BrotherBlacklist, ItemTag.Utility, ItemTag.Damage];
 
-        public override GameObject ItemModel => null;
+        public override GameObject ItemModel => Main.bundle.LoadAsset<GameObject>("CrocsEchoWaveHolder.prefab");
 
-        public override Sprite ItemIcon => null;
+        public override Sprite ItemIcon => Main.bundle.LoadAsset<Sprite>("texCrocsEchoWave.png");
+
+        public override bool IsCroc => true;
 
         public static BuffDef speedBuff;
 
@@ -96,7 +98,7 @@ namespace CrocsItems.Items.Reds
     public class CrocsEchoWaveController : CharacterBody.ItemBehavior
     {
         public float timer;
-        public float buffChangeInterval = 0.1f;
+        public float buffChangeInterval = 0.15f;
         public int buffCountToChange = 2;
 
         public int maxBuffCount = 100;
@@ -105,8 +107,6 @@ namespace CrocsItems.Items.Reds
         public int buffCount;
         public float minImpactDamage = 10f;
         public float maxImpactDamage = 30f;
-        public float minStunDuration = 1f;
-        public float maxStunDuration = 4f;
 
         public OverlapAttack attackerOverlap;
 
