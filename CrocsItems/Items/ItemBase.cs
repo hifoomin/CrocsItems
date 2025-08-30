@@ -42,7 +42,7 @@ namespace CrocsItems.Items
         public virtual bool IsJibbit { get; } = false;
 
         public virtual float modelPanelParametersMinDistance { get; } = 2f;
-        public virtual float modelPanelParametersMaxDistance { get; } = 10f;
+        public virtual float modelPanelParametersMaxDistance { get; } = 6f;
 
         public ItemDef ItemDef;
         public static List<ItemDef> jibbitzList = new();
@@ -86,11 +86,12 @@ namespace CrocsItems.Items
             ItemDef.pickupToken = "ITEM_CROCSITEMS_" + ItemLangTokenName + "_PICKUP";
             ItemDef.descriptionToken = "ITEM_CROCSITEMS_" + ItemLangTokenName + "_DESCRIPTION";
             ItemDef.loreToken = "ITEM_CROCSITEMS_" + ItemLangTokenName + "_LORE";
+#pragma warning disable
             ItemDef.pickupModelPrefab = ItemModel ?? null;
             ItemDef.pickupIconSprite = ItemIcon ?? null;
             ItemDef.hidden = false;
             ItemDef.canRemove = CanRemove;
-#pragma warning disable
+
             ItemDef.deprecatedTier = Tier;
             // ItemDef.requiredExpansion = Main.CROCSExpansionDef;
             if (ItemTags.Length > 0)

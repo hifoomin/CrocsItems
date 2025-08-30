@@ -21,11 +21,11 @@ namespace CrocsItems.Items.Jibbitz
 
         public override ItemTag[] ItemTags => [ItemTag.Healing, ItemTag.Utility, ItemTag.AIBlacklist, ItemTag.WorldUnique];
 
-        public override GameObject ItemModel => null;
+        public override GameObject ItemModel => Main.bundle.LoadAsset<GameObject>("BlackHeartHolder.prefab");
 
-        public override Sprite ItemIcon => null;
+        public override Sprite ItemIcon => Main.bundle.LoadAsset<Sprite>("texBlackHeart.png");
 
-        public override bool CanRemove => false;
+        public override bool CanRemove => true;
 
         public override bool IsCroc => false;
         public override bool IsJibbit => true;
