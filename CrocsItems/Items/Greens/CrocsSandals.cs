@@ -34,6 +34,7 @@ namespace CrocsItems.Items.Greens
         public override bool IsCroc => true;
 
         public static BuffDef attackSpeedBuff;
+        public static Material matAttackSpeedOverlay;
 
         public override ItemDisplayRuleDict CreateItemDisplayRules()
         {
@@ -44,6 +45,7 @@ namespace CrocsItems.Items.Greens
         {
             base.Init();
             SetUpBuff();
+            SetUpVFX();
         }
 
         public void SetUpBuff()
@@ -52,8 +54,9 @@ namespace CrocsItems.Items.Greens
             attackSpeedBuff.isHidden = false;
             attackSpeedBuff.isDebuff = false;
             attackSpeedBuff.canStack = true;
-            attackSpeedBuff.buffColor = Color.yellow;
-            attackSpeedBuff.iconSprite = Addressables.LoadAssetAsync<Sprite>("2508a4654959d334aaca7d4321922642").WaitForCompletion();
+            attackSpeedBuff.buffColor = new Color32(227, 169, 45, 255);
+            attackSpeedBuff.iconSprite = Addressables.LoadAssetAsync<Sprite>("2caf2c471e1682249a666ba7ce277eac").WaitForCompletion();
+            // guid is attack speed on crit
             attackSpeedBuff.flags = BuffDef.Flags.ExcludeFromNoxiousThorns;
             attackSpeedBuff.ignoreGrowthNectar = false;
             attackSpeedBuff.isDOT = false;
@@ -64,6 +67,14 @@ namespace CrocsItems.Items.Greens
 
         public void SetUpVFX()
         {
+            matAttackSpeedOverlay = new Material(Addressables.LoadAssetAsync<Material>("a3a110f394481d346979d76f8d20138d").WaitForCompletion());
+            // guid is mat huntress flash expanded
+            matAttackSpeedOverlay.SetFloat("_InvFade", 1f);
+            matAttackSpeedOverlay.SetFloat("_Boost", 1.5f);
+            matAttackSpeedOverlay.SetFloat("_AlphaBoost", 2f);
+            matAttackSpeedOverlay.SetFloat("_AlphaBias", 0f);
+            matAttackSpeedOverlay.SetInt("_Cull", 0);
+            matAttackSpeedOverlay.SetColor("_TintColor", new Color32(227, 169, 45, 255));
         }
 
         public override void Hooks()
@@ -71,7 +82,12 @@ namespace CrocsItems.Items.Greens
             base.Hooks();
             RecalculateStatsAPI.GetStatCoefficients += CalcAttackSpeedBoost;
             GlobalEventManager.onServerDamageDealt += OnServerDamageDealt;
-            // CharacterBody.onBodyInventoryChangedGlobal += OnInventoryChangedGlobal;
+            CharacterBody.onBodyInventoryChangedGlobal += OnInventoryChangedGlobal;
+
+        }
+        private void OnInventoryChangedGlobal(CharacterBody body)
+        {
+            body.AddItemBehavior<CrocsSandalsController>(GetCount(body));
         }
 
         private void CalcAttackSpeedBoost(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args)
@@ -82,20 +98,8 @@ namespace CrocsItems.Items.Greens
             }
         }
 
-        private void OnInventoryChangedGlobal(CharacterBody body)
-        {
-            if (!NetworkServer.active)
-            {
-                return;
-            }
-
-            body.AddItemBehavior<CrocsSandalsController>(GetCount(body));
-        }
-
         private void OnServerDamageDealt(DamageReport report)
         {
-            // sphere search?
-            // create orbs that heal?
             var attackerBody = report.attackerBody;
             if (!attackerBody)
             {
@@ -140,6 +144,12 @@ namespace CrocsItems.Items.Greens
                     return;
                 }
 
+                var crocsSandalsController = attackerBody.GetComponent<CrocsSandalsController>();
+                if (!crocsSandalsController)
+                {
+                    return;
+                }
+
                 var buffCount = attackerBody.GetBuffCount(attackSpeedBuff);
                 var maxBuffCount = 20 * stack;
 
@@ -148,6 +158,34 @@ namespace CrocsItems.Items.Greens
                 if (buffCount < maxBuffCount)
                 {
                     attackerBody.AddTimedBuff(attackSpeedBuff, 3f);
+                    crocsSandalsController.counter++;
+                }
+
+                var modelLocator = attackerBody.modelLocator;
+                if (!modelLocator)
+                {
+                    return;
+                }
+                var modelTransform = modelLocator.modelTransform;
+                if (!modelTransform)
+                {
+                    return;
+                }
+
+                if (buffCount > 0 && crocsSandalsController.counter >= maxBuffCount && buffCount % maxBuffCount == 0) // add overlay vfx and play sound every 20 buff count
+                {
+                    var temporaryOverlay = TemporaryOverlayManager.AddOverlay(modelTransform.gameObject);
+                    temporaryOverlay.duration = buffCount / maxBuffCount; // decrease overlay duration the more buffs you get, because it gets a lot easier with more stacks
+                    temporaryOverlay.animateShaderAlpha = true;
+                    temporaryOverlay.alphaCurve = AnimationCurve.EaseInOut(0f, 1f, 1f, 0f);
+                    temporaryOverlay.destroyComponentOnEnd = true;
+                    temporaryOverlay.originalMaterial = matAttackSpeedOverlay;
+                    temporaryOverlay.inspectorCharacterModel = modelTransform.GetComponent<CharacterModel>();
+
+                    Util.PlaySound("Play_vagrant_attack1_pop", attackerBody.gameObject);
+                    Util.PlaySound("Play_bison_step_charge", attackerBody.gameObject);
+
+                    crocsSandalsController.counter = 0;
                 }
             }
         }
@@ -172,42 +210,6 @@ namespace CrocsItems.Items.Greens
 
     public class CrocsSandalsController : CharacterBody.ItemBehavior
     {
-        public int maxBuffCount = 8;
-        public int buffCount;
-        public float inCombatTimer = 0f;
-        public float outOfCombatInterval = 2f;
-        public float buffChangeInterval = 1f;
-
-        public void FixedUpdate()
-        {
-            if (!body)
-            {
-                return;
-            }
-
-            inCombatTimer += Time.fixedDeltaTime;
-            if (body.outOfCombatStopwatch <= outOfCombatInterval)
-            {
-                inCombatTimer += Time.fixedDeltaTime;
-                if (inCombatTimer >= buffChangeInterval)
-                {
-                    buffCount++;
-                    buffCount = Mathf.Min(buffCount, maxBuffCount);
-                    body.SetBuffCount(CrocsSandals.attackSpeedBuff.buffIndex, buffCount);
-                    inCombatTimer = 0f;
-                }
-            }
-            else
-            {
-                inCombatTimer += Time.fixedDeltaTime;
-                if (inCombatTimer >= buffChangeInterval)
-                {
-                    buffCount--;
-                    buffCount = Mathf.Max(0, buffCount);
-                    body.SetBuffCount(CrocsSandals.attackSpeedBuff.buffIndex, buffCount);
-                    inCombatTimer = 0f;
-                }
-            }
-        }
+        public int counter = 0;
     }
 }

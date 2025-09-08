@@ -52,8 +52,9 @@ namespace CrocsItems.Items.Reds
             speedBuff.isHidden = false;
             speedBuff.isDebuff = false;
             speedBuff.canStack = true;
-            speedBuff.buffColor = Color.white;
-            speedBuff.iconSprite = Addressables.LoadAssetAsync<Sprite>("2508a4654959d334aaca7d4321922642").WaitForCompletion();
+            speedBuff.buffColor = new Color32(36, 47, 82, 255);
+            speedBuff.iconSprite = Addressables.LoadAssetAsync<Sprite>("3e432d63b7c55a544a0f383de7b1f474").WaitForCompletion();
+            // guid is tex move speed buff icon
             speedBuff.flags = BuffDef.Flags.ExcludeFromNoxiousThorns;
             speedBuff.ignoreGrowthNectar = false;
             speedBuff.isDOT = false;
@@ -199,6 +200,10 @@ namespace CrocsItems.Items.Reds
                 body.SetBuffCount(CrocsEchoWave.speedBuff.buffIndex, buffCountAfterImpact);
                 // body.SetBuffCount(CrocsEchoWave.speedBuff.buffIndex, 0);
                 SpawnVFX();
+            }
+            else
+            {
+                Util.PlaySound("Play_mage_m2_zap", gameObject);
             }
         }
 
