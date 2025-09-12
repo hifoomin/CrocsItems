@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using CrocsItems.Items.Greens;
 using KinematicCharacterController;
 using R2API;
 using RoR2;
@@ -35,6 +37,12 @@ namespace CrocsItems.Items.Reds
 
         public static BuffDef speedBuff;
 
+        public static GameObject passiveParticles;
+
+        public static GameObject impactParticles;
+
+        public static GameObject impactExplosion;
+
         public override ItemDisplayRuleDict CreateItemDisplayRules()
         {
             return new ItemDisplayRuleDict();
@@ -43,6 +51,7 @@ namespace CrocsItems.Items.Reds
         public override void Init()
         {
             base.Init();
+            SetUpVFX();
             SetUpBuff();
         }
 
@@ -66,6 +75,94 @@ namespace CrocsItems.Items.Reds
 
         public void SetUpVFX()
         {
+            passiveParticles = PrefabAPI.InstantiateClone(Addressables.LoadAssetAsync<GameObject>("56e965f822208a1438744bae84358e1d").WaitForCompletion(), "Crocs Echo Wave Passive Particles VFX", false);
+            // guid is bandit 2 smoke bomb
+
+            passiveParticles.GetComponent<EffectComponent>().applyScale = true;
+            VFXUtils.ScaleToHierarchy(passiveParticles);
+
+            VFXUtils.RecolorMaterialsAndLights(passiveParticles, Color.yellow, Color.yellow, true, true);
+
+            var passiveParticlesTransform = passiveParticles.transform.Find("Core");
+            passiveParticlesTransform.localScale = Vector3.one / 12f;// base radius at 1 scale is 12m according to bandit's util value
+            passiveParticlesTransform.localPosition = Vector3.zero;
+
+            var passiveParticlesSparks = passiveParticlesTransform.Find("Sparks");
+            var passiveParticlesSparksPS = passiveParticlesSparks.GetComponent<ParticleSystem>();
+            var passiveParticlesSparksMain = passiveParticlesSparksPS.main;
+            passiveParticlesSparksMain.maxParticles = 100;
+            var passiveParticlesSparksEmission = passiveParticlesSparksPS.emission;
+            var passiveParticlesBurst = new ParticleSystem.Burst(0f, 100, 100, 1, 0.01f);
+            passiveParticlesBurst.probability = 1f;
+            passiveParticlesSparksEmission.SetBurst(0, passiveParticlesBurst);
+
+            var passiveParticlesSparksPSR = passiveParticlesSparks.GetComponent<ParticleSystemRenderer>();
+            passiveParticlesSparksPSR.material.SetTexture("_MainTex", Addressables.LoadAssetAsync<Texture2D>("8d0972db888e4df42814eb4b6178f0e2").WaitForCompletion());
+            // guid is tex glow paint mask
+
+            passiveParticlesTransform.Find("Smoke, Edge Circle").gameObject.SetActive(false);
+            passiveParticlesTransform.Find("Dust, CenterSphere").gameObject.SetActive(false);
+            passiveParticlesTransform.Find("Dust, CenterTube").gameObject.SetActive(false);
+
+            passiveParticlesTransform.Find("Point Light").gameObject.SetActive(false);
+
+            ContentAddition.AddEffect(passiveParticles);
+
+            impactParticles = PrefabAPI.InstantiateClone(Addressables.LoadAssetAsync<GameObject>("56e965f822208a1438744bae84358e1d").WaitForCompletion(), "Crocs Echo Wave Impact Particles VFX", false);
+            // guid is bandit 2 smoke bomb
+
+            impactParticles.GetComponent<EffectComponent>().applyScale = true;
+            VFXUtils.ScaleToHierarchy(impactParticles);
+
+            VFXUtils.RecolorMaterialsAndLights(impactParticles, Color.yellow, Color.yellow, true, true);
+
+            var transform = impactParticles.transform.Find("Core");
+            transform.localScale = Vector3.one / 12f;// base radius at 1 scale is 12m according to bandit's util value
+            transform.localPosition = Vector3.zero;
+
+            var sparks = transform.Find("Sparks");
+            var sparksPS = sparks.GetComponent<ParticleSystem>();
+            var sparksMain = sparksPS.main;
+            sparksMain.maxParticles = 100;
+            var sparksEmission = sparksPS.emission;
+            var burst = new ParticleSystem.Burst(0f, 100, 100, 1, 0.01f);
+            burst.probability = 1f;
+            sparksEmission.SetBurst(0, burst);
+
+            var sparksPSR = sparks.GetComponent<ParticleSystemRenderer>();
+            sparksPSR.material.SetTexture("_MainTex", Addressables.LoadAssetAsync<Texture2D>("8d0972db888e4df42814eb4b6178f0e2").WaitForCompletion());
+            // guid is tex glow paint mask
+
+            // transform.Find("Smoke, Edge Circle").gameObject.SetActive(false);
+            transform.Find("Dust, CenterSphere").gameObject.SetActive(false);
+            transform.Find("Dust, CenterTube").gameObject.SetActive(false);
+
+            var pointLight = transform.Find("Point Light");
+
+            var light = pointLight.GetComponent<Light>();
+            light.intensity = 15f;
+            light.range = 16f;
+
+            ContentAddition.AddEffect(impactParticles);
+
+            VFXUtils.MultiplyDuration(impactParticles, 4f);
+
+            impactExplosion = PrefabAPI.InstantiateClone(Addressables.LoadAssetAsync<GameObject>("26e8d4483ccf1484b98777af3c44ecbb").WaitForCompletion(), "Crocs Echo Wave Impact VFX", false);
+            // guid is ice ring explosion
+            var effectComponent = impactExplosion.GetComponent<EffectComponent>();
+            effectComponent.applyScale = true;
+            effectComponent.soundName = "";
+
+            impactExplosion.transform.Find("RuneRings").gameObject.SetActive(false);
+
+            impactExplosion.transform.Find("IceMesh").GetComponent<ParticleSystemRenderer>().mesh = Addressables.LoadAssetAsync<Mesh>("a66159248c42bad478cf4ce0379ba1ee").WaitForCompletion();
+            // guid is mdl special distant planet neb station
+
+            VFXUtils.RecolorMaterialsAndLights(impactExplosion, Color.yellow, Color.yellow, true);
+            VFXUtils.MultiplyDuration(impactExplosion, 2.5f);
+            VFXUtils.ScaleToHierarchy(impactExplosion);
+
+            ContentAddition.AddEffect(impactExplosion);
         }
 
         public override void Hooks()
@@ -120,6 +217,12 @@ namespace CrocsItems.Items.Reds
         public int cachedLayer;
         public bool successfullyHit = false;
 
+        public bool addedOverlay = false;
+
+        public List<HurtBox> lastHitHurtBoxes = new();
+
+        public TemporaryOverlayInstance temporaryOverlayInstance;
+
         public void Start()
         {
             cachedLayer = gameObject.layer;
@@ -155,6 +258,7 @@ namespace CrocsItems.Items.Reds
                     if (buffCount >= minBuffCount)
                     {
                         CheckImpact();
+                        // AddOverlay();
                     }
                 }
                 else
@@ -192,27 +296,62 @@ namespace CrocsItems.Items.Reds
             hitBoxObject.transform.forward = body.inputBank.moveVector;
             hitBoxObject.transform.position = modelTransform.position;
 
-            successfullyHit = attackerOverlap.Fire();
+            successfullyHit = attackerOverlap.Fire(lastHitHurtBoxes);
             if (successfullyHit)
             {
                 // Main.ModLogger.LogError("attack overlap fire is true");
                 buffCount = buffCountAfterImpact;
                 body.SetBuffCount(CrocsEchoWave.speedBuff.buffIndex, buffCountAfterImpact);
                 // body.SetBuffCount(CrocsEchoWave.speedBuff.buffIndex, 0);
-                SpawnVFX();
-            }
-            else
-            {
-                Util.PlaySound("Play_mage_m2_zap", gameObject);
+                // RemoveOverlay();
+                SpawnVFX(lastHitHurtBoxes);
             }
         }
 
-        public void SpawnVFX()
+        public void SpawnVFX(List<HurtBox> lastHitHurtBoxes)
         {
             Util.PlaySound("Play_grandParent_attack1_boulderSmall_impact", gameObject);
             Util.PlaySound("Play_vulture_attack1_impact", gameObject);
             Util.PlaySound("Play_vulture_attack1_impact", gameObject);
             Util.PlaySound("Play_env_desert_wind_gust", gameObject);
+            Util.PlaySound("Play_mage_m2_zap", gameObject);
+
+            var effectData = new EffectData();
+            effectData.scale = 16f + body.radius;
+            effectData.origin = body.footPosition;
+
+            EffectManager.SpawnEffect(CrocsEchoWave.impactParticles, effectData, true);
+
+            for (int i = 0; i < lastHitHurtBoxes.Count; i++)
+            {
+                var lastHitHurtBox = lastHitHurtBoxes[i];
+
+                var healthComponent = lastHitHurtBox.healthComponent;
+                if (!healthComponent)
+                {
+                    continue;
+                }
+
+                var victimBody = healthComponent.body;
+                if (!victimBody)
+                {
+                    continue;
+                }
+
+                var effectData2 = new EffectData();
+                effectData2.scale = Mathf.Sqrt(victimBody.radius * 2f);
+                effectData2.origin = victimBody.corePosition;
+
+                EffectManager.SpawnEffect(CrocsEchoWave.impactExplosion, effectData2, true);
+
+                var effectData3 = new EffectData();
+                effectData3.scale = 8f + victimBody.radius;
+                effectData3.origin = victimBody.footPosition;
+
+                EffectManager.SpawnEffect(CrocsEchoWave.impactParticles, effectData3, true);
+            }
+
+            lastHitHurtBoxes.Clear();
         }
     }
 }

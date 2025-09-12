@@ -42,6 +42,8 @@ namespace CrocsItems
         public ConfigEntry<bool> enableAutoConfig { get; private set; }
         public ConfigEntry<string> latestVersion { get; private set; }
 
+        public static Texture2D texRampTritone;
+
         public void Awake()
         {
             Instance = this;
@@ -96,6 +98,9 @@ namespace CrocsItems
 
         public void SetUpContent()
         {
+            texRampTritone = Addressables.LoadAssetAsync<Texture2D>("c2d2c5f1046510242bc50084ffaefe55").WaitForCompletion();
+            // guid is tex ramp tritone
+
             var EquipmentTypes = Assembly.GetExecutingAssembly().GetTypes().Where(type => !type.IsAbstract && type.IsSubclassOf(typeof(EquipmentBase)));
 
             foreach (var equipmentType in EquipmentTypes)
