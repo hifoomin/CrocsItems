@@ -90,9 +90,9 @@ namespace CrocsItems.Items.Reds
             var passiveParticlesSparks = passiveParticlesTransform.Find("Sparks");
             var passiveParticlesSparksPS = passiveParticlesSparks.GetComponent<ParticleSystem>();
             var passiveParticlesSparksMain = passiveParticlesSparksPS.main;
-            passiveParticlesSparksMain.maxParticles = 100;
+            passiveParticlesSparksMain.maxParticles = 200;
             var passiveParticlesSparksEmission = passiveParticlesSparksPS.emission;
-            var passiveParticlesBurst = new ParticleSystem.Burst(0f, 100, 100, 1, 0.01f);
+            var passiveParticlesBurst = new ParticleSystem.Burst(0f, 200, 200, 1, 0.01f);
             passiveParticlesBurst.probability = 1f;
             passiveParticlesSparksEmission.SetBurst(0, passiveParticlesBurst);
 

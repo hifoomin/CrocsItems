@@ -185,7 +185,7 @@ namespace CrocsItems.Items.Greens
                     Util.PlaySound("Play_vagrant_attack1_pop", attackerBody.gameObject);
                     Util.PlaySound("Play_bison_step_charge", attackerBody.gameObject);
                     var effectData = new EffectData();
-                    effectData.scale = 12f;
+                    effectData.scale = 24f;
                     effectData.origin = attackerBody.corePosition;
 
                     EffectManager.SpawnEffect(Reds.CrocsEchoWave.passiveParticles, effectData, true);
