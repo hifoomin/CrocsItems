@@ -303,9 +303,9 @@ namespace CrocsItems.Items.Jibbitz
     {
         ruleType = ItemDisplayRuleType.ParentedPrefab,
         childName = "FootL",
-        localPos = new Vector3(0.01803F, 0.10702F, 0.0056F),
-        localAngles = new Vector3(50.7015F, 267.4674F, 187.5229F),
-        localScale = new Vector3(0.13742F, 0.13742F, 0.13742F),
+        localPos = new Vector3(0.11188F, 0.1233F, 0.00458F),
+        localAngles = new Vector3(4.14639F, 17.92205F, 162.0147F),
+        localScale = new Vector3(0.0828F, 0.0828F, 0.0828F),
 
         followerPrefab = blackHeartIDRS,
         limbMask = LimbFlags.None,
@@ -320,10 +320,9 @@ namespace CrocsItems.Items.Jibbitz
     {
         ruleType = ItemDisplayRuleType.ParentedPrefab,
         childName = "Wheel",
-        localPos = new Vector3(0.71467F, -0.08814F, -0.00931F),
-        localAngles = new Vector3(293.512F, 301.6905F, 148.5624F),
-        localScale = new Vector3(0.21422F, 0.21422F, 0.21422F),
-
+        localPos = new Vector3(0.66651F, -0.2417F, -0.02912F),
+        localAngles = new Vector3(8.86733F, 342.5343F, 37.52561F),
+        localScale = new Vector3(0.15695F, 0.15695F, 0.15695F),
         followerPrefab = blackHeartIDRS,
         limbMask = LimbFlags.None,
         followerPrefabAddress = new AssetReferenceGameObject("")
