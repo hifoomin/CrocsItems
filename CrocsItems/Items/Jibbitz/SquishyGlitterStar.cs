@@ -117,8 +117,8 @@ namespace CrocsItems.Items.Jibbitz
                 {
                     ruleType = ItemDisplayRuleType.ParentedPrefab,
                     childName = "FootR",
-                    localPos = new Vector3(-0.02835F, 0.17636F, -0.12551F),
-                    localAngles = new Vector3(1.22206F, 126.7797F, 171.0013F),
+                    localPos = new Vector3(-0.04968F, 0.19693F, -0.12796F),
+                    localAngles = new Vector3(15.672F, 87.32202F, 205.6392F),
                     localScale = new Vector3(0.08714F, 0.08714F, 0.08714F),
 
                     followerPrefab = squishyGlitterStarIDRS,
@@ -134,8 +134,8 @@ namespace CrocsItems.Items.Jibbitz
     {
         ruleType = ItemDisplayRuleType.ParentedPrefab,
         childName = "MainWheelR",
-        localPos = new Vector3(-0.07932F, 1.26486F, 2.03193F),
-        localAngles = new Vector3(345.2194F, 90.34128F, 250.4259F),
+        localPos = new Vector3(-0.02833F, 1.30067F, 2.00702F),
+        localAngles = new Vector3(29.35673F, 97.75612F, 303.2204F),
         localScale = new Vector3(1.08009F, 1.08009F, 1.08009F),
 
         followerPrefab = squishyGlitterStarIDRS,
