@@ -23,7 +23,7 @@ namespace CrocsItems.Items.Reds
 
         public override string ItemFullDescription => "Sprinting builds up to <style=cIsUtility>100% movement speed</style>. <style=cIsDamage>Ramming</style> into an enemy while sprinting deals up to <style=cIsDamage>3000%</style> <style=cStack>(+3000% per stack)</style> <style=cIsDamage>damage</style> based on movement speed.";
 
-        public override string ItemLore => "This item should have lore.";
+        public override string ItemLore => "";
 
         public override ItemTier Tier => ItemTier.Tier3;
 
@@ -42,11 +42,6 @@ namespace CrocsItems.Items.Reds
         public static GameObject impactParticles;
 
         public static GameObject impactExplosion;
-
-        public override ItemDisplayRuleDict CreateItemDisplayRules()
-        {
-            return new ItemDisplayRuleDict();
-        }
 
         public override void Init()
         {
@@ -190,6 +185,287 @@ namespace CrocsItems.Items.Reds
                 var speedBoostBuffCount = sender.GetBuffCount(speedBuff);
                 args.moveSpeedMultAdd += speedBoostBuffCount * 0.01f;
             }
+        }
+
+        public override ItemDisplayRuleDict CreateItemDisplayRules()
+        {
+            var crocsEchoWaveIDRS = PrefabAPI.InstantiateClone(Main.bundle.LoadAsset<GameObject>("CrocsEchoWaveHolder.prefab"), "CrocsEchoWaveIDRS", false);
+            var itemDisplay = crocsEchoWaveIDRS.AddComponent<ItemDisplay>();
+            List<Renderer> rendererList = [.. crocsEchoWaveIDRS.GetComponentsInChildren<Renderer>()];
+            Array.Resize(ref itemDisplay.rendererInfos, rendererList.Count);
+            for (int j = 0; j < rendererList.Count; j++)
+            {
+                var renderer = rendererList[j];
+                var defaultMaterial = renderer.material;
+                itemDisplay.rendererInfos[j] = new CharacterModel.RendererInfo()
+                {
+                    renderer = renderer,
+                    defaultMaterial = defaultMaterial,
+                    defaultShadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On,
+                    ignoreOverlays = false,
+                    hideOnDeath = false,
+                    ignoresMaterialOverrides = false
+                };
+            }
+
+            ItemDisplayRuleDict i = new();
+
+            i.Add("CommandoBody",
+
+                            new ItemDisplayRule()
+                            {
+                                ruleType = ItemDisplayRuleType.ParentedPrefab,
+                                childName = "FootR",
+                                localPos = new Vector3(-0.00387F, 0.11857F, 0.01629F),
+                                localAngles = new Vector3(84.61184F, 220.3867F, 47.41245F),
+                                localScale = new Vector3(0.14531F, 0.14659F, 0.14531F),
+
+                                followerPrefab = crocsEchoWaveIDRS,
+                                limbMask = LimbFlags.None,
+                                followerPrefabAddress = new AssetReferenceGameObject("")
+                            }
+
+                        );
+
+            i.Add("HuntressBody",
+
+    new ItemDisplayRule()
+    {
+        ruleType = ItemDisplayRuleType.ParentedPrefab,
+        childName = "FootR",
+        localPos = new Vector3(-0.01041F, 0.08162F, -0.00924F),
+        localAngles = new Vector3(85.0407F, 197.8464F, 22.78797F),
+        localScale = new Vector3(0.12683F, 0.11843F, 0.11843F),
+
+        followerPrefab = crocsEchoWaveIDRS,
+        limbMask = LimbFlags.None,
+        followerPrefabAddress = new AssetReferenceGameObject("")
+    }
+
+);
+
+            i.Add("Bandit2Body",
+
+    new ItemDisplayRule()
+    {
+        ruleType = ItemDisplayRuleType.ParentedPrefab,
+        childName = "FootR",
+        localPos = new Vector3(-0.00708F, 0.15599F, -0.01433F),
+        localAngles = new Vector3(56.54497F, 15.6954F, 175.5474F),
+        localScale = new Vector3(0.16627F, 0.16627F, 0.16627F),
+
+        followerPrefab = crocsEchoWaveIDRS,
+        limbMask = LimbFlags.None,
+        followerPrefabAddress = new AssetReferenceGameObject("")
+    }
+
+);
+
+            i.Add("ToolbotBody",
+
+    new ItemDisplayRule()
+    {
+        ruleType = ItemDisplayRuleType.ParentedPrefab,
+        childName = "MainWheelR",
+        localPos = new Vector3(-0.18462F, -0.25801F, 1.3921F),
+        localAngles = new Vector3(35.12162F, 178.6449F, 15.10357F),
+        localScale = new Vector3(2.15099F, 2.15099F, 2.15099F),
+
+        followerPrefab = crocsEchoWaveIDRS,
+        limbMask = LimbFlags.None,
+        followerPrefabAddress = new AssetReferenceGameObject("")
+    }
+
+);
+
+            i.Add("EngiBody",
+
+    new ItemDisplayRule()
+    {
+        ruleType = ItemDisplayRuleType.ParentedPrefab,
+        childName = "FootR",
+        localPos = new Vector3(-0.00137F, 0.18647F, -0.01936F),
+        localAngles = new Vector3(80.48362F, 131.4032F, 305.733F),
+        localScale = new Vector3(0.26569F, 0.26125F, 0.24179F),
+
+        followerPrefab = crocsEchoWaveIDRS,
+        limbMask = LimbFlags.None,
+        followerPrefabAddress = new AssetReferenceGameObject("")
+    }
+
+);
+
+            i.Add("MageBody",
+
+    new ItemDisplayRule()
+    {
+        ruleType = ItemDisplayRuleType.ParentedPrefab,
+        childName = "FootR",
+        localPos = new Vector3(-0.0208F, 0.17038F, 0.00367F),
+        localAngles = new Vector3(50.80023F, 10.96024F, 198.6825F),
+        localScale = new Vector3(0.16578F, 0.16718F, 0.16578F),
+
+        followerPrefab = crocsEchoWaveIDRS,
+        limbMask = LimbFlags.None,
+        followerPrefabAddress = new AssetReferenceGameObject("")
+    }
+
+);
+
+            i.Add("MercBody",
+
+    new ItemDisplayRule()
+    {
+        ruleType = ItemDisplayRuleType.ParentedPrefab,
+        childName = "FootR",
+        localPos = new Vector3(0.00942F, 0.12823F, 0.00514F),
+        localAngles = new Vector3(58.85978F, 356.114F, 183.1814F),
+        localScale = new Vector3(0.15804F, 0.16791F, 0.15804F),
+
+        followerPrefab = crocsEchoWaveIDRS,
+        limbMask = LimbFlags.None,
+        followerPrefabAddress = new AssetReferenceGameObject("")
+    }
+
+);
+
+            i.Add("TreebotBody",
+
+    new ItemDisplayRule()
+    {
+        ruleType = ItemDisplayRuleType.ParentedPrefab,
+        childName = "FootFrontR",
+        localPos = new Vector3(-0.23328F, 1.42811F, -0.26013F),
+        localAngles = new Vector3(354.3248F, 47.10957F, 177.3136F),
+        localScale = new Vector3(0.43013F, 0.43013F, 0.43013F),
+
+        followerPrefab = crocsEchoWaveIDRS,
+        limbMask = LimbFlags.None,
+        followerPrefabAddress = new AssetReferenceGameObject("")
+    }
+
+);
+
+            i.Add("LoaderBody",
+
+    new ItemDisplayRule()
+    {
+        ruleType = ItemDisplayRuleType.ParentedPrefab,
+        childName = "FootR",
+        localPos = new Vector3(-0.01876F, 0.17012F, -0.04231F),
+        localAngles = new Vector3(41.75632F, 13.00825F, 191.4296F),
+        localScale = new Vector3(0.20217F, 0.20217F, 0.20217F),
+
+        followerPrefab = crocsEchoWaveIDRS,
+        limbMask = LimbFlags.None,
+        followerPrefabAddress = new AssetReferenceGameObject("")
+    }
+
+);
+
+            i.Add("CrocoBody",
+
+    new ItemDisplayRule()
+    {
+        ruleType = ItemDisplayRuleType.ParentedPrefab,
+        childName = "FootR",
+        localPos = new Vector3(0.09182F, 0.8062F, -1.41886F),
+        localAngles = new Vector3(15.25191F, 3.42294F, 179.4088F),
+        localScale = new Vector3(2.44813F, 2.00045F, 1.90371F),
+
+        followerPrefab = crocsEchoWaveIDRS,
+        limbMask = LimbFlags.None,
+        followerPrefabAddress = new AssetReferenceGameObject("")
+    }
+
+);
+
+            i.Add("CaptainBody",
+
+    new ItemDisplayRule()
+    {
+        ruleType = ItemDisplayRuleType.ParentedPrefab,
+        childName = "FootR",
+        localPos = new Vector3(0.00953F, 0.17557F, -0.12688F),
+        localAngles = new Vector3(9.75157F, 0.82062F, 180.4495F),
+        localScale = new Vector3(0.23233F, 0.20145F, 0.20145F),
+
+        followerPrefab = crocsEchoWaveIDRS,
+        limbMask = LimbFlags.None,
+        followerPrefabAddress = new AssetReferenceGameObject("")
+    }
+
+);
+
+            i.Add("RailgunnerBody",
+
+    new ItemDisplayRule()
+    {
+        ruleType = ItemDisplayRuleType.ParentedPrefab,
+        childName = "FootR",
+        localPos = new Vector3(0.00226F, 0.23116F, -0.08208F),
+        localAngles = new Vector3(41.55166F, 2.0483F, 180.5456F),
+        localScale = new Vector3(0.32904F, 0.28836F, 0.29128F),
+
+        followerPrefab = crocsEchoWaveIDRS,
+        limbMask = LimbFlags.None,
+        followerPrefabAddress = new AssetReferenceGameObject("")
+    }
+
+);
+
+            i.Add("VoidSurvivorBody",
+
+    new ItemDisplayRule()
+    {
+        ruleType = ItemDisplayRuleType.ParentedPrefab,
+        childName = "FootR",
+        localPos = new Vector3(-0.027F, 0.16392F, -0.01953F),
+        localAngles = new Vector3(56.78973F, 79.39018F, 167.5546F),
+        localScale = new Vector3(0.1866F, 0.1866F, 0.1866F),
+
+        followerPrefab = crocsEchoWaveIDRS,
+        limbMask = LimbFlags.None,
+        followerPrefabAddress = new AssetReferenceGameObject("")
+    }
+
+);
+
+            i.Add("SeekerBody",
+
+    new ItemDisplayRule()
+    {
+        ruleType = ItemDisplayRuleType.ParentedPrefab,
+        childName = "FootR",
+        localPos = new Vector3(0.02031F, 0.12695F, 0.00215F),
+        localAngles = new Vector3(54.21278F, 280.0642F, 187.6502F),
+        localScale = new Vector3(0.16319F, 0.16319F, 0.16319F),
+
+        followerPrefab = crocsEchoWaveIDRS,
+        limbMask = LimbFlags.None,
+        followerPrefabAddress = new AssetReferenceGameObject("")
+    }
+
+);
+
+            i.Add("ChefBody",
+
+    new ItemDisplayRule()
+    {
+        ruleType = ItemDisplayRuleType.ParentedPrefab,
+        childName = "Wheel",
+        localPos = new Vector3(-0.72718F, -0.28572F, -0.0641F),
+        localAngles = new Vector3(276.9898F, 27.48667F, 240.6015F),
+        localScale = new Vector3(0.26742F, 0.26742F, 0.26742F),
+
+        followerPrefab = crocsEchoWaveIDRS,
+        limbMask = LimbFlags.None,
+        followerPrefabAddress = new AssetReferenceGameObject("")
+    }
+
+);
+
+            return i;
         }
     }
 

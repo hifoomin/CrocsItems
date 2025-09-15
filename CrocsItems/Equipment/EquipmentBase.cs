@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Reflection;
 using R2API;
 using RoR2;
@@ -41,6 +42,10 @@ namespace CrocsItems.Equipment
         public virtual bool IsBoss { get; } = false;
 
         public virtual bool IsLunar { get; } = false;
+
+        public abstract bool IsCroc { get; }
+
+        public virtual bool IsJibbit { get; } = false;
 
         public EquipmentDef EquipmentDef;
 
@@ -95,6 +100,21 @@ namespace CrocsItems.Equipment
             LanguageAPI.Add("EQUIPMENT_CROCSITEMS_" + EquipmentLangTokenName + "_DESCRIPTION", EquipmentFullDescription);
             LanguageAPI.Add("EQUIPMENT_CROCSITEMS_" + EquipmentLangTokenName + "_LORE", EquipmentLore);
 
+            if (EquipmentModel != null)
+            {
+                CreateModelPanelParameters(EquipmentModel);
+            }
+
+            if (IsJibbit)
+            {
+                Main.jibbitzListEquipment.Add(EquipmentDef);
+            }
+
+            if (IsCroc)
+            {
+                Main.crocsListEquipment.Add(EquipmentDef);
+            }
+
             ItemAPI.Add(new CustomEquipment(EquipmentDef, CreateItemDisplayRules()));
             On.RoR2.EquipmentSlot.PerformEquipmentAction += PerformEquipmentAction;
         }
@@ -115,5 +135,41 @@ namespace CrocsItems.Equipment
 
         public virtual void Hooks()
         { }
+
+        private void CreateModelPanelParameters(GameObject equipmentModel)
+        {
+            if (equipmentModel.GetComponent<ModelPanelParameters>() != null)
+            {
+                return;
+            }
+
+            GameObject model = PrefabAPI.InstantiateClone(equipmentModel, equipmentModel.name + "-fixed", false);
+            GameObject focus = new("Focus");
+            GameObject camera = new("Camera");
+            MeshRenderer biggestRenderer = model.GetComponentsInChildren<MeshRenderer>().ToList().OrderByDescending(x => ToFloat(x.bounds.size)).First();
+            float mult = ToFloat(biggestRenderer.bounds.size) / 3f;
+            float min = mult;
+            float max = 3f * mult;
+            focus.transform.parent = model.transform;
+            camera.transform.parent = model.transform;
+            focus.transform.position = biggestRenderer.bounds.center;
+            camera.transform.localPosition = focus.transform.position + (model.transform.forward * max);
+
+            var modelPanelParameters = model.AddComponent<ModelPanelParameters>();
+            modelPanelParameters.focusPointTransform = focus.transform;
+            modelPanelParameters.cameraPositionTransform = camera.transform;
+            modelPanelParameters.minDistance = min;
+            modelPanelParameters.maxDistance = max;
+
+            EquipmentDef.pickupModelPrefab = model;
+        }
+
+        public static float ToFloat(Vector3 vec)
+        {
+            vec.x = Mathf.Abs(vec.x);
+            vec.y = Mathf.Abs(vec.y);
+            vec.z = Mathf.Abs(vec.z);
+            return vec.x + vec.y + vec.z;
+        }
     }
 }

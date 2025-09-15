@@ -45,8 +45,6 @@ namespace CrocsItems.Items
         public virtual float modelPanelParametersMaxDistance { get; } = 6f;
 
         public ItemDef ItemDef;
-        public static List<ItemDef> jibbitzList = new();
-        public static List<ItemDef> crocsList = new();
 
         public static bool DefaultEnabledCallback(ItemBase self)
         {
@@ -123,12 +121,12 @@ namespace CrocsItems.Items
 
             if (IsJibbit)
             {
-                jibbitzList.Add(ItemDef);
+                Main.jibbitzList.Add(ItemDef);
             }
 
             if (IsCroc)
             {
-                crocsList.Add(ItemDef);
+                Main.crocsList.Add(ItemDef);
             }
         }
 
@@ -144,8 +142,8 @@ namespace CrocsItems.Items
             GameObject camera = new("Camera");
             MeshRenderer biggestRenderer = model.GetComponentsInChildren<MeshRenderer>().ToList().OrderByDescending(x => ToFloat(x.bounds.size)).First();
             float mult = ToFloat(biggestRenderer.bounds.size) / 3f;
-            float min = 2f * mult;
-            float max = 10f * mult;
+            float min = mult;
+            float max = 3f * mult;
             focus.transform.parent = model.transform;
             camera.transform.parent = model.transform;
             focus.transform.position = biggestRenderer.bounds.center;
@@ -173,52 +171,6 @@ namespace CrocsItems.Items
             if (!body || !body.inventory) { return 0; }
 
             return body.inventory.GetItemCount(ItemDef);
-        }
-
-        public bool HasAnyJibbit(CharacterBody body)
-        {
-            bool hasAnyJibbit = false;
-
-            var inventory = body.inventory;
-            if (!body || !inventory)
-            {
-                return hasAnyJibbit;
-            }
-
-            for (int i = 0; i < jibbitzList.Count; i++)
-            {
-                var jibbit = jibbitzList[i];
-                if (inventory.GetItemCount(jibbit.itemIndex) > 0)
-                {
-                    hasAnyJibbit = true;
-                    break;
-                }
-            }
-
-            return hasAnyJibbit;
-        }
-
-        public static bool HasAnyCrocs(CharacterBody body)
-        {
-            bool hasAnyCrocs = false;
-
-            var inventory = body.inventory;
-            if (!body || !inventory)
-            {
-                return hasAnyCrocs;
-            }
-
-            for (int i = 0; i < crocsList.Count; i++)
-            {
-                var crocs = crocsList[i];
-                if (inventory.GetItemCount(crocs.itemIndex) > 0)
-                {
-                    hasAnyCrocs = true;
-                    break;
-                }
-            }
-
-            return hasAnyCrocs;
         }
 
         public string GetConfName()

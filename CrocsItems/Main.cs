@@ -23,14 +23,15 @@ namespace CrocsItems
     [BepInDependency(LanguageAPI.PluginGUID)]
     [BepInDependency(R2APIContentManager.PluginGUID)]
     [BepInDependency(RecalculateStatsAPI.PluginGUID)]
-    // [BepInDependency(DirectorAPI.PluginGUID)]
+    [BepInDependency(ProcTypeAPI.PluginGUID)]
+    [BepInDependency(DirectorAPI.PluginGUID)]
     [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
     public class Main : BaseUnityPlugin
     {
         public const string PluginGUID = PluginAuthor + "." + PluginName;
         public const string PluginAuthor = "HIFU";
         public const string PluginName = "CrocsItems";
-        public const string PluginVersion = "0.0.1";
+        public const string PluginVersion = "1.0.0";
         public static ManualLogSource ModLogger;
         public static AssetBundle bundle;
         public static Main Instance;
@@ -43,6 +44,12 @@ namespace CrocsItems
         public ConfigEntry<string> latestVersion { get; private set; }
 
         public static Texture2D texRampTritone;
+        public static Texture2D texRampTritone2;
+
+        public static List<ItemDef> jibbitzList = new();
+        public static List<EquipmentDef> jibbitzListEquipment = new();
+        public static List<ItemDef> crocsList = new();
+        public static List<EquipmentDef> crocsListEquipment = new();
 
         public void Awake()
         {
@@ -100,6 +107,9 @@ namespace CrocsItems
         {
             texRampTritone = Addressables.LoadAssetAsync<Texture2D>("c2d2c5f1046510242bc50084ffaefe55").WaitForCompletion();
             // guid is tex ramp tritone
+
+            texRampTritone2 = Addressables.LoadAssetAsync<Texture2D>("b2ddb2fde000ae84d957416e656c6d67").WaitForCompletion();
+            // guid is tex ramp tritone 2
 
             var EquipmentTypes = Assembly.GetExecutingAssembly().GetTypes().Where(type => !type.IsAbstract && type.IsSubclassOf(typeof(EquipmentBase)));
 
@@ -161,6 +171,75 @@ namespace CrocsItems
                 T instance = (T)Activator.CreateInstance(type);
                 action(instance);
             }
+        }
+
+        public bool HasAnyJibbit(CharacterBody body)
+        {
+            bool hasAnyJibbit = false;
+
+            var inventory = body.inventory;
+            if (!body || !inventory)
+            {
+                return hasAnyJibbit;
+            }
+
+            for (int i = 0; i < Main.jibbitzList.Count; i++)
+            {
+                var jibbit = Main.jibbitzList[i];
+                if (inventory.GetItemCount(jibbit.itemIndex) > 0)
+                {
+                    hasAnyJibbit = true;
+                    break;
+                }
+            }
+
+            return hasAnyJibbit;
+        }
+
+        public static bool HasAnyCrocs(CharacterBody body)
+        {
+            bool hasAnyCrocs = false;
+
+            var inventory = body.inventory;
+            if (!body || !inventory)
+            {
+                return hasAnyCrocs;
+            }
+
+            for (int i = 0; i < Main.crocsList.Count; i++)
+            {
+                var crocs = Main.crocsList[i];
+                if (inventory.GetItemCount(crocs.itemIndex) > 0)
+                {
+                    hasAnyCrocs = true;
+                    break;
+                }
+            }
+
+            return hasAnyCrocs;
+        }
+
+        public static bool HasAnyCrocsEquipment(CharacterBody body)
+        {
+            bool hasAnyCrocsEquipment = false;
+
+            var equipmentSlot = body.equipmentSlot;
+            if (!body || !equipmentSlot)
+            {
+                return hasAnyCrocsEquipment;
+            }
+
+            for (int i = 0; i < Main.crocsListEquipment.Count; i++)
+            {
+                var crocsEquipment = Main.crocsListEquipment[i];
+                if (crocsEquipment.equipmentIndex == equipmentSlot.equipmentIndex)
+                {
+                    hasAnyCrocsEquipment = true;
+                    break;
+                }
+            }
+
+            return hasAnyCrocsEquipment;
         }
     }
 }

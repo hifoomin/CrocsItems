@@ -1,9 +1,13 @@
+using R2API;
+using RoR2;
+using RoR2.ExpansionManagement;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using RoR2;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 using static R2API.DirectorAPI;
+using static Rewired.UI.ControlMapper.ControlMapper;
 using Stage = R2API.DirectorAPI.Stage;
 
 namespace CrocsItems.Interactables
@@ -31,7 +35,8 @@ namespace CrocsItems.Interactables
         public abstract HullClassification Size { get; }
         public abstract int MinimumStageToAppearOn { get; }
         public abstract int SpawnWeight { get; }
-        public virtual List<Stage> Stages { get; } = new() { Stage.DistantRoost, Stage.TitanicPlains, Stage.SiphonedForest, Stage.VerdantFalls, Stage.ViscousFalls, Stage.ShatteredAbodes, Stage.DisturbedImpact, Stage.AbandonedAqueduct, Stage.WetlandAspect, Stage.AphelianSanctuary, Stage.ReformedAltar, Stage.RallypointDelta, Stage.ScorchedAcres, Stage.SulfurPools, Stage.TreebornColony, Stage.GoldenDieback, Stage.AbyssalDepths, Stage.SirensCall, Stage.SunderedGrove, Stage.SkyMeadow, Stage.HelminthHatchery };
+        public abstract string inspectInfoDescription { get; }
+        public virtual List<Stage> Stages { get; } = new() { Stage.AbandonedAqueduct, Stage.AbyssalDepths, Stage.AphelianSanctuary, Stage.DistantRoost, Stage.DisturbedImpact, Stage.GildedCoast, Stage.GoldenDieback, Stage.HelminthHatchery, Stage.RallypointDelta, Stage.ReformedAltar, Stage.ScorchedAcres, Stage.ShatteredAbodes, Stage.SiphonedForest, Stage.SirensCall, Stage.SkyMeadow, Stage.SulfurPools, Stage.SunderedGrove, Stage.TitanicPlains, Stage.TreebornColony, Stage.VerdantFalls, Stage.ViscousFalls, Stage.WetlandAspect };
         public virtual bool SpawnInSimulacrum { get; } = false;
         public virtual bool SpawnInVoid { get; } = false;
         public virtual bool SpawnOnCommencement { get; } = false;
@@ -39,8 +44,6 @@ namespace CrocsItems.Interactables
         public virtual float SacrificeWeightMultiplier { get; } = 1f;
         public virtual bool OrientToFloor { get; } = true;
         public virtual bool SlightlyRandomizeOrientation { get; } = true;
-
-        // public virtual ExpansionDef RequiredExpansionHolder { get; } = Main.SOTV; later
 
         public virtual void Init()
         {
@@ -88,12 +91,48 @@ namespace CrocsItems.Interactables
                 for (int i = 0; i < Stages.Count; i++)
                 {
                     var stage = Stages[i];
-                    // Helpers.AddNewInteractableToStage(directorCardHolder, stage);
+                    // Main.ModLogger.LogError($"Adding {interactableSpawnCard.name} to stage {stage}");
+                    Helpers.AddNewInteractableToStage(directorCardHolder, stage);
                 }
             }
 
-            // var expansionRequirementComponent = interactableSpawnCard.prefab.AddComponent<ExpansionRequirementComponent>();
-            // expansionRequirementComponent.requiredExpansion = Main.CROCSExpansionDef;
+            var prefab = interactableSpawnCard.prefab;
+
+            if (prefab.GetComponent<GenericInspectInfoProvider>() != null)
+            {
+                GameObject.DestroyImmediate(prefab.GetComponent<GenericInspectInfoProvider>());
+            }
+
+            var genericInspectInfoProvider = prefab.AddComponent<GenericInspectInfoProvider>();
+            genericInspectInfoProvider.enabled = true;
+
+            var genericDisplayNameProvider = prefab.GetComponent<GenericDisplayNameProvider>();
+
+            var descToken = "CROCSITEMS_" + Name.ToUpper();
+            descToken = descToken.Replace(" ", "_") + "_DESCRIPTION";
+
+            LanguageAPI.Add(descToken, inspectInfoDescription);
+
+            var shrineIcon = Addressables.LoadAssetAsync<Sprite>("13b0407e61597f24497f3832ad9231d8").WaitForCompletion();
+            // guid is tex shrine icon outlined
+
+            var inspectDef = ScriptableObject.CreateInstance<InspectDef>();
+            inspectDef.name = prefab.name + "InspectDef";
+            var inspectInfo = inspectDef.Info = new()
+            {
+                TitleToken = genericDisplayNameProvider.displayToken,
+                DescriptionToken = descToken,
+                FlavorToken = "crocs",
+                isConsumedItem = false,
+                Visual = shrineIcon,
+                TitleColor = Color.white
+            };
+
+            genericInspectInfoProvider.InspectInfo = inspectDef;
+            genericInspectInfoProvider.InspectInfo.Info = inspectInfo;
+
+            // Main.ModLogger.LogError($"directorCard is {directorCard}");
+            // Main.ModLogger.LogError($"directorCardHolder is {directorCardHolder}");
         }
 
         public static bool DefaultEnabledCallback(InteractableBase self)

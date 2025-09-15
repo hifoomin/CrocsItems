@@ -23,7 +23,7 @@ namespace CrocsItems
                 for (int i = 0; i < CharacterBody.readOnlyInstancesList.Count; i++)
                 {
                     var body = CharacterBody.readOnlyInstancesList[i];
-                    if (ItemBase.HasAnyCrocs(body))
+                    if (Main.HasAnyCrocs(body) || Main.HasAnyCrocsEquipment(body))
                     {
                         anyoneHasAnyCrocsItem = true;
                         break;
@@ -32,7 +32,7 @@ namespace CrocsItems
 
                 if (Run.instance && anyoneHasAnyCrocsItem)
                 {
-                    var randomJibbit = ItemBase.jibbitzList[Run.instance.stageRng.RangeInt(0, ItemBase.jibbitzList.Count)];
+                    var randomJibbit = Main.jibbitzList[Run.instance.stageRng.RangeInt(0, Main.jibbitzList.Count)];
                     var randomJibbitPickup = PickupCatalog.FindPickupIndex(randomJibbit.itemIndex);
 
                     var position = self.dropTransform.position + Vector3.up * 1.5f;
