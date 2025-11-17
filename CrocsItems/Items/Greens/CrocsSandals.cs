@@ -19,7 +19,7 @@ namespace CrocsItems.Items.Greens
 
         public override string ItemPickupDesc => "Attacks heal all nearby allies for a percentage of damage dealt. Gain attack speed the longer you are in combat.";
 
-        public override string ItemFullDescription => "Attacks <style=cIsHealing>heal</style> all nearby allies for <style=cIsHealing>1.5%</style> <style=cStack>(+1.5% per stack)</style> of damage dealt. Gain <style=cIsDamage>2%</style> <style=cIsDamage>attack speed</style> on hit, up to <style=cIsDamage>+40%</style> <style=cStack>(+40% per stack)</style>.";
+        public override string ItemFullDescription => "Attacks <style=cIsHealing>heal</style> all nearby allies for <style=cIsHealing>1%</style> <style=cStack>(+1% per stack)</style> of damage dealt. Gain <style=cIsDamage>2%</style> <style=cIsDamage>attack speed</style> on hit, up to <style=cIsDamage>+30%</style> <style=cStack>(+30% per stack)</style>.";
 
         public override string ItemLore => "";
 
@@ -35,6 +35,8 @@ namespace CrocsItems.Items.Greens
 
         public static BuffDef attackSpeedBuff;
         public static Material matAttackSpeedOverlay;
+
+        public static GameObject indicator;
 
         public override void Init()
         {
@@ -70,6 +72,23 @@ namespace CrocsItems.Items.Greens
             matAttackSpeedOverlay.SetFloat("_AlphaBias", 0f);
             matAttackSpeedOverlay.SetInt("_Cull", 0);
             matAttackSpeedOverlay.SetColor("_TintColor", new Color32(227, 169, 45, 255));
+
+            indicator = Addressables.LoadAssetAsync<GameObject>("5ba295c0a3919a544939e6efe1ff17b3").WaitForCompletion().InstantiateClone("Pocket Plutonium Visual", true);
+            // guid is nearby damage bonus indicator
+            var radiusTrans = indicator.transform.Find("Radius, Spherical");
+            radiusTrans.localScale = Vector3.one * 20f * 2f; // radius x 2
+
+            var newRadiusMat = new Material(Addressables.LoadAssetAsync<Material>("efcdb7ab1fe128a4eb2d79a8024c25bd").WaitForCompletion());
+            // guid is mat nearby damage bonus range indicator
+            var cloudTexture = Addressables.LoadAssetAsync<Texture2D>("b5d21f410fb4d5e4ea8b97cb85dd9ff5").WaitForCompletion();
+            // guid is tex cloud water ripples
+            newRadiusMat.SetTexture("_MainTex", cloudTexture);
+            newRadiusMat.SetTexture("_Cloud1Tex", cloudTexture);
+            newRadiusMat.SetColor("_TintColor", new Color32(61, 128, 31, 220));
+
+            radiusTrans.GetComponent<MeshRenderer>().material = newRadiusMat;
+
+            indicator.RegisterNetworkPrefab();
         }
 
         public override void Hooks()
@@ -105,7 +124,7 @@ namespace CrocsItems.Items.Greens
 
             if (stack > 0)
             {
-                var healValue = report.damageDealt * 0.015f * stack;
+                var healValue = report.damageDealt * 0.01f * stack;
 
                 var teamMask = default(TeamMask);
                 teamMask.AddTeam(attackerBody.teamComponent.teamIndex);
@@ -146,7 +165,7 @@ namespace CrocsItems.Items.Greens
                 }
 
                 var buffCount = attackerBody.GetBuffCount(attackSpeedBuff);
-                var maxBuffCount = 20 * stack;
+                var maxBuffCount = 15 * stack;
 
                 RefreshTimedBuffs(attackerBody, attackSpeedBuff, 3f);
 
@@ -492,5 +511,44 @@ namespace CrocsItems.Items.Greens
     public class CrocsSandalsController : CharacterBody.ItemBehavior
     {
         public int counter = 0;
+        public GameObject radiusIndicator;
+        public float radiusSquared = 400f;
+        public float distance = 40f;
+
+        public void Start()
+        {
+            enableRadiusIndicator = true;
+            var radiusTrans = radiusIndicator.transform.GetChild(1);
+            radiusTrans.localScale = Vector3.one * distance;
+        }
+
+        public bool enableRadiusIndicator
+        {
+            get
+            {
+                return radiusIndicator;
+            }
+            set
+            {
+                if (enableRadiusIndicator != value)
+                {
+                    if (value)
+                    {
+                        radiusIndicator = Instantiate(CrocsSandals.indicator, body.corePosition, Quaternion.identity);
+                        radiusIndicator.GetComponent<NetworkedBodyAttachment>().AttachToGameObjectAndSpawn(gameObject, null);
+                    }
+                    else
+                    {
+                        Destroy(radiusIndicator);
+                        radiusIndicator = null;
+                    }
+                }
+            }
+        }
+
+        public void OnDisable()
+        {
+            enableRadiusIndicator = false;
+        }
     }
 }

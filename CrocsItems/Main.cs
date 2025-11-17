@@ -20,6 +20,7 @@ using UnityEngine.AddressableAssets;
 namespace CrocsItems
 {
     [BepInDependency(PrefabAPI.PluginGUID)]
+    [BepInDependency(ItemAPI.PluginGUID)]
     [BepInDependency(LanguageAPI.PluginGUID)]
     [BepInDependency(R2APIContentManager.PluginGUID)]
     [BepInDependency(RecalculateStatsAPI.PluginGUID)]
@@ -31,7 +32,7 @@ namespace CrocsItems
         public const string PluginGUID = PluginAuthor + "." + PluginName;
         public const string PluginAuthor = "HIFU";
         public const string PluginName = "CrocsItems";
-        public const string PluginVersion = "1.0.0";
+        public const string PluginVersion = "1.1.0";
         public static ManualLogSource ModLogger;
         public static AssetBundle bundle;
         public static Main Instance;

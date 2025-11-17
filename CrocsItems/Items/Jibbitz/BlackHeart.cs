@@ -15,7 +15,7 @@ namespace CrocsItems.Items.Jibbitz
 
         public override string ItemPickupDesc => "While you have a Crocs item, increase health regeneration and maximum health.";
 
-        public override string ItemFullDescription => "While you have a <style=cIsUtility>Crocs</style> item, increase <style=cIsHealing>health regeneration</style> by <style=cIsHealing>1.5%</style> <style=cStack>(+1.5% per stack)</style> of your <style=cIsHealing>maximum health</style> and <style=cIsHealing>maximum health</style> by <style=cIsHealing>125</style> <style=cStack>(+125 per stack)</style>.";
+        public override string ItemFullDescription => "While you have a <style=cIsUtility>Crocs</style> item, increase <style=cIsHealing>health regeneration</style> by <style=cIsHealing>1%</style> <style=cStack>(+1% per stack)</style> of your <style=cIsHealing>maximum health</style> and <style=cIsHealing>maximum health</style> by <style=cIsHealing>125</style> <style=cStack>(+125 per stack)</style>.";
 
         public override string ItemLore => "";
 
@@ -50,7 +50,7 @@ namespace CrocsItems.Items.Jibbitz
             if (stack > 0 && hasAnyCrocs)
             {
                 args.baseHealthAdd += 125f * stack;
-                args.baseRegenAdd += 0.015f * sender.maxHealth * stack;
+                args.baseRegenAdd += 0.01f * sender.maxHealth * stack;
             }
         }
 

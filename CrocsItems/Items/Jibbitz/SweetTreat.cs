@@ -15,7 +15,7 @@ namespace CrocsItems.Items.Jibbitz
 
         public override string ItemPickupDesc => "While you have a Crocs item, increase attack speed and reduce skill cooldowns.";
 
-        public override string ItemFullDescription => "While you have a <style=cIsUtility>Crocs</style> item, increase <style=cIsDamage>attack speed</style> by <style=cIsDamage>30%</style> <style=cStack>(+30% per stack)</style> and reduce <style=cIsUtility>skill cooldowns</style> by <style=cIsUtility>15%</style> <style=cStack>(+15% per stack)</style>.";
+        public override string ItemFullDescription => "While you have a <style=cIsUtility>Crocs</style> item, increase <style=cIsDamage>attack speed</style> by <style=cIsDamage>30%</style> <style=cStack>(+30% per stack)</style> and reduce <style=cIsUtility>skill cooldowns</style> by <style=cIsUtility>12.5%</style> <style=cStack>(+12.5% per stack)</style>.";
 
         public override string ItemLore => "";
 
@@ -50,7 +50,7 @@ namespace CrocsItems.Items.Jibbitz
             if (stack > 0 && hasAnyCrocs)
             {
                 args.baseAttackSpeedAdd += 0.3f * stack;
-                args.cooldownMultAdd -= Util.ConvertAmplificationPercentageIntoReductionNormalized(0.15f * stack);
+                args.cooldownMultAdd -= Util.ConvertAmplificationPercentageIntoReductionNormalized(0.125f * stack);
             }
         }
 

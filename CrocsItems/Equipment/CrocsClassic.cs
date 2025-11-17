@@ -16,7 +16,7 @@ namespace CrocsItems.Equipment
 
         public override string EquipmentPickupDesc => "Switch between an offensive stance and a defensive stance.";
 
-        public override string EquipmentFullDescription => "<style=cIsUtility>Switch</style> between an <style=cIsDamage>offensive stance</style>, gaining <style=cIsDamage>explosive</style> attacks and <style=cIsDamage>+20%</style> '<style=cIsDamage>Critical Strike</style>' chance, or a <style=cIsHealing>defensive</style> stance, gaining <style=cIsHealing>50</style> armor, <style=cIsHealing>+3 hp/s health regeneration</style> and <style=cIsHealing>50% increased healing</style>.";
+        public override string EquipmentFullDescription => "<style=cIsUtility>Switch</style> between an <style=cIsDamage>offensive stance</style>, gaining <style=cIsDamage>explosive attacks</style> for <style=cIsDamage>20% TOTAL damage</style> and <style=cIsDamage>+20% critical chance</style>, or a <style=cIsHealing>defensive</style> stance, gaining <style=cIsHealing>30</style> armor, <style=cIsHealing>+3 hp/s health regeneration</style> and <style=cIsHealing>40% increased healing</style>.";
 
         public override string EquipmentLore => "";
 
@@ -24,7 +24,7 @@ namespace CrocsItems.Equipment
 
         public override Sprite EquipmentIcon => Main.bundle.LoadAsset<Sprite>("texCrocsClassic.png");
 
-        public override float Cooldown => 5f;
+        public override float Cooldown => 10f;
 
         public override bool IsCroc => true;
 
@@ -58,7 +58,7 @@ namespace CrocsItems.Equipment
             offensiveBuff.iconSprite = Addressables.LoadAssetAsync<Sprite>("f0d295f0817aef341aad8edc6350e781").WaitForCompletion();
             // guid is tex buff full crit icon
             offensiveBuff.buffColor = new Color32(30, 167, 217, 255);
-            offensiveBuff.name = "Crocs Classic | Offensive Stance - Explosive Attacks, +20% Crit Chance";
+            offensiveBuff.name = "Crocs Classic | Offensive Stance - Explosive Attacks, +20% Movement Speed, +20% Crit Chance";
 
             ContentAddition.AddBuffDef(offensiveBuff);
 
@@ -73,7 +73,7 @@ namespace CrocsItems.Equipment
             defensiveBuff.iconSprite = Addressables.LoadAssetAsync<Sprite>("c9ccdef9734715a408aa90e9e37735e4").WaitForCompletion();
             // guid is tex buff body armor
             defensiveBuff.buffColor = new Color32(30, 217, 83, 255);
-            defensiveBuff.name = "Crocs Classic | Defensive Stance - +50 Armor, +3 hp/s regeneration, +50% Healing";
+            defensiveBuff.name = "Crocs Classic | Defensive Stance - +30 Armor, +3 hp/s regeneration, +40% Healing";
 
             ContentAddition.AddBuffDef(defensiveBuff);
         }
@@ -115,7 +115,7 @@ namespace CrocsItems.Equipment
             var body = self.body;
             if (body && body.HasBuff(defensiveBuff))
             {
-                amount *= 1.5f;
+                amount *= 1.4f;
             }
             return orig(self, amount, procChainMask, nonRegen);
         }
@@ -184,7 +184,7 @@ namespace CrocsItems.Equipment
             }
             if (sender.HasBuff(defensiveBuff))
             {
-                args.armorAdd += 50f;
+                args.armorAdd += 30f;
                 args.baseRegenAdd += 3f + (3f * 0.2f * (sender.level - 1));
             }
         }
