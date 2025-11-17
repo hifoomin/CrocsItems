@@ -1,0 +1,19 @@
+{
+	"name": "Crocs_Item_Mod",
+	"version_number": "1.0.2",
+	"website_url": "",
+	"description": "Enjoy an item pack that adds shoes inspired by Crocs' iconic Classic Clog & loot Jibbitz charms for exclusive buffs! (6 Items, 1 Interactable)",
+	"dependencies": [
+		"bbepis-BepInExPack-5.4.2121",
+		"RiskofThunder-R2API_Core-5.1.7",
+		"RiskofThunder-HookGenPatcher-1.2.9",
+		"RiskofThunder-R2API_Addressables-1.1.2",
+		"RiskofThunder-R2API_Prefab-1.1.1",
+		"RiskofThunder-R2API_Language-1.0.1",
+		"RiskofThunder-R2API_ContentManagement-1.0.10",
+		"RiskofThunder-R2API_RecalculateStats-1.6.1",
+		"RiskofThunder-R2API_ProcType-1.0.2",
+		"RiskofThunder-R2API_Director-2.3.6",
+		"RiskofThunder-R2API_Items-1.0.7"
+	]
+}
