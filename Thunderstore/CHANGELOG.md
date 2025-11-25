@@ -1,3 +1,7 @@
+## 1.1.1 Patch notes
+
+- Updated Icon and README as per Crocs
+
 # 1.1.0 Patch Notes
 - Updated README
 - Added range indicator to Crocs Sandals
@@ -21,9 +25,9 @@
 - Updated README
 - Updated mod icon
 
-## 1.0.1
+## 1.0.1 Patch Notes
 - Updated README
 - Updated mod icon
 
-## 1.0.0
+## 1.0.0 Patch Notes
 - Released
