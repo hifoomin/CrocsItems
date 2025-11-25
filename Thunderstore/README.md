@@ -2,7 +2,7 @@
 
 Step into comfort, survivors! Enjoy free shoes inspired by Crocs' iconic Classic Clog & loot Jibbitz charms for effects like momentum powered impacts, ramping buffs, or team healing boosts, all snapping straight onto your clogs- this is where style meets survival!
 
- *This mod was commissioned by Crocs; its features are fan-made and inspired by Crocs' iconic Classic Clog. The mods are not official game content, nor are they associated with the game developers and publishers.
+*Mods Features Are Fan-Made And Inspired By Crocs’ iconic Classic Clog. The Mods Are Not Official Game Content Nor Are They Associated With The Game Developers And Publishers.
 
 ## Screenshots
 ![](https://i.postimg.cc/T3f91rCq/2025-11-15-11-25.png)
