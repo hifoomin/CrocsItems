@@ -1,6 +1,14 @@
-## 1.1.1 Patch notes
+## 1.1.3 Patch notes
+
+- Updated readme
+
+## 1.1.2 Patch notes
 
 - Updated Icon and README as per Crocs
+
+## 1.1.1 Patch notes
+
+- Updated Icon
 
 # 1.1.0 Patch Notes
 - Updated README
