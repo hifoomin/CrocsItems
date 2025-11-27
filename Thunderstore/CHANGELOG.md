@@ -4,7 +4,7 @@
 
 ## 1.1.2 Patch notes
 
-- Updated Icon and README as per Crocs
+- Migrated mod to new name and updated README as per Crocs
 
 ## 1.1.1 Patch notes
 
