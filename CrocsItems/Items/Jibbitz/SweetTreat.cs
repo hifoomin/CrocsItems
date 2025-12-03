@@ -7,6 +7,7 @@ using UnityEngine.AddressableAssets;
 
 namespace CrocsItems.Items.Jibbitz
 {
+    [ConfigSection("Items :: Sweet Treat")]
     public class SweetTreat : ItemBase<SweetTreat>
     {
         public override string ItemName => "Sweet Treat";
@@ -15,7 +16,7 @@ namespace CrocsItems.Items.Jibbitz
 
         public override string ItemPickupDesc => "While you have a Crocs item, increase attack speed and reduce skill cooldowns.";
 
-        public override string ItemFullDescription => "While you have a <style=cIsUtility>Crocs</style> item, increase <style=cIsDamage>attack speed</style> by <style=cIsDamage>30%</style> <style=cStack>(+30% per stack)</style> and reduce <style=cIsUtility>skill cooldowns</style> by <style=cIsUtility>12.5%</style> <style=cStack>(+12.5% per stack)</style>.";
+        public override string ItemFullDescription => $"While you have a <style=cIsUtility>Crocs</style> item, increase <style=cIsDamage>attack speed</style> by <style=cIsDamage>{baseAttackSpeed * 100f}%</style> <style=cStack>(+{stackAttackSpeed * 100f}% per stack)</style> and reduce <style=cIsUtility>skill cooldowns</style> by <style=cIsUtility>{baseCooldownReduction * 100f}%</style> <style=cStack>(+{stackCooldownReduction * 100f}% per stack)</style>.";
 
         public override string ItemLore => "";
 
@@ -31,6 +32,18 @@ namespace CrocsItems.Items.Jibbitz
 
         public override bool IsCroc => false;
         public override bool IsJibbit => true;
+
+        [ConfigField("Base Attack Speed", "Decimal.", 0.3f)]
+        public static float baseAttackSpeed;
+
+        [ConfigField("Stack Attack Speed", "Decimal.", 0.3f)]
+        public static float stackAttackSpeed;
+
+        [ConfigField("Base Cooldown Reduction", "Decimal.", 0.125f)]
+        public static float baseCooldownReduction;
+
+        [ConfigField("Stack Cooldown Reduction", "Decimal.", 0.125f)]
+        public static float stackCooldownReduction;
 
         public override void Init()
         {
@@ -49,9 +62,10 @@ namespace CrocsItems.Items.Jibbitz
             var hasAnyCrocs = Main.HasAnyCrocs(sender) || Main.HasAnyCrocsEquipment(sender);
             if (stack > 0 && hasAnyCrocs)
             {
-                args.baseAttackSpeedAdd += 0.3f * stack;
-                args.cooldownMultAdd -= Util.ConvertAmplificationPercentageIntoReductionNormalized(0.125f * stack);
+                args.baseAttackSpeedAdd += baseAttackSpeed + stackAttackSpeed * (stack - 1);
+                args.allSkills.cooldownMultAdd -= Util.ConvertAmplificationPercentageIntoReductionNormalized(baseCooldownReduction + stackCooldownReduction * (stack - 1));
             }
+            /// fiux this
         }
 
         public override ItemDisplayRuleDict CreateItemDisplayRules()
@@ -323,6 +337,76 @@ namespace CrocsItems.Items.Jibbitz
         localPos = new Vector3(-0.97968F, 0.48174F, 0.05943F),
         localAngles = new Vector3(16.72155F, 14.57022F, 8.75761F),
         localScale = new Vector3(0.37293F, 0.37293F, 0.37293F),
+
+        followerPrefab = sweetTreatIDRS,
+        limbMask = LimbFlags.None,
+        followerPrefabAddress = new AssetReferenceGameObject("")
+    }
+
+);
+            /*
+            i.Add("HereticBody",
+
+                                        new ItemDisplayRule()
+                                        {
+                                            ruleType = ItemDisplayRuleType.ParentedPrefab,
+                                            childName = "Head",
+                                            localPos = new Vector3(0.26702F, 1.13291F, 0.0558F),
+                                            localAngles = new Vector3(12.29358F, 193.1755F, 2.72597F),
+                                            localScale = new Vector3(0.46625F, 0.46625F, 0.46625F),
+
+                                            followerPrefab = sweetTreatIDRS,
+                                            limbMask = LimbFlags.None,
+                                            followerPrefabAddress = new AssetReferenceGameObject("")
+                                        }
+
+                                    );
+            */
+            // massive desync
+
+            i.Add("FalseSonBody",
+
+                            new ItemDisplayRule()
+                            {
+                                ruleType = ItemDisplayRuleType.ParentedPrefab,
+                                childName = "ClawSpin",
+                                localPos = new Vector3(0.09933F, -0.00734F, 0.45197F),
+                                localAngles = new Vector3(289.5376F, 188.5355F, 314.7383F),
+                                localScale = new Vector3(0.21599F, 0.21599F, 0.21599F),
+
+                                followerPrefab = sweetTreatIDRS,
+                                limbMask = LimbFlags.None,
+                                followerPrefabAddress = new AssetReferenceGameObject("")
+                            }
+
+                        );
+
+            i.Add("DroneTechBody",
+
+                            new ItemDisplayRule()
+                            {
+                                ruleType = ItemDisplayRuleType.ParentedPrefab,
+                                childName = "ClawSpin",
+                                localPos = new Vector3(0.11442F, -0.00419F, 0.45741F),
+                                localAngles = new Vector3(292.4789F, 175.7025F, 330.278F),
+                                localScale = new Vector3(0.20131F, 0.20131F, 0.20131F),
+
+                                followerPrefab = sweetTreatIDRS,
+                                limbMask = LimbFlags.None,
+                                followerPrefabAddress = new AssetReferenceGameObject("")
+                            }
+
+                        );
+
+            i.Add("DrifterBody",
+
+    new ItemDisplayRule()
+    {
+        ruleType = ItemDisplayRuleType.ParentedPrefab,
+        childName = "Head",
+        localPos = new Vector3(-0.51274F, -0.14115F, 0.02959F),
+        localAngles = new Vector3(355.0407F, 23.41378F, 67.31437F),
+        localScale = new Vector3(0.26736F, 0.26736F, 0.26736F),
 
         followerPrefab = sweetTreatIDRS,
         limbMask = LimbFlags.None,

@@ -19,7 +19,7 @@ using Stage = R2API.DirectorAPI.Stage;
 namespace CrocsItems.Interactables
 {
     [ConfigSection("Interactables :: Shrine of Crocs")]
-    internal class ShrineofCrocs : InteractableBase<ShrineofCrocs>
+    internal class ShrineOfCrocs : InteractableBase<ShrineOfCrocs>
     {
         public override string Name => "Shrine of Crocs";
 
@@ -27,7 +27,7 @@ namespace CrocsItems.Interactables
 
         public override int MaxSpawnsPerStage => 1;
 
-        public override int CreditCost => 35;
+        public override int CreditCost => directorCreditCost;
 
         public override HullClassification Size => HullClassification.Golem;
 
@@ -53,6 +53,9 @@ namespace CrocsItems.Interactables
         public static CostTypeIndex costTypeIndex = CostTypeIndex.Money;
 
         public override List<Stage> Stages { get; } = new() { Stage.AbandonedAqueduct, Stage.AbyssalDepths, Stage.AphelianSanctuary, Stage.DistantRoost, Stage.DisturbedImpact, Stage.GildedCoast, Stage.GoldenDieback, Stage.HelminthHatchery, Stage.RallypointDelta, Stage.ReformedAltar, Stage.ScorchedAcres, Stage.ShatteredAbodes, Stage.SiphonedForest, Stage.SirensCall, Stage.SkyMeadow, Stage.SulfurPools, Stage.SunderedGrove, Stage.TitanicPlains, Stage.TreebornColony, Stage.VerdantFalls, Stage.ViscousFalls, Stage.WetlandAspect };
+
+        [ConfigField("Director Credit Cost", "", 35)]
+        public static int directorCreditCost;
 
         public override void Init()
         {
@@ -137,7 +140,7 @@ namespace CrocsItems.Interactables
         {
             shrineCrocsBehavior = GetComponent<ShrineOfCrocsController>();
             purchaseInteraction = GetComponent<PurchaseInteraction>();
-            purchaseInteraction.costType = ShrineofCrocs.costTypeIndex;
+            purchaseInteraction.costType = ShrineOfCrocs.costTypeIndex;
             purchaseInteraction.onPurchase.AddListener(InteractListener);
         }
 
@@ -205,7 +208,6 @@ namespace CrocsItems.Interactables
             // Main.ModLogger.LogError("random white pickupindex is " + dropPickup);
 
             ItemDef randomJibbit = null;
-            // EquipmentDef randomJibbitEquipment = null;
             ItemDef randomCrocItem = null;
             EquipmentDef randomCrocEquipment = null;
 
@@ -219,7 +221,7 @@ namespace CrocsItems.Interactables
                 {
                     if (Run.instance.stageRng.RangeInt(0, 100) <= 33)
                     {
-                        randomCrocEquipment = Main.crocsListEquipment[Run.instance.stageRng.RangeInt(0, Main.crocsList.Count)];
+                        randomCrocEquipment = Main.crocsListEquipment[Run.instance.stageRng.RangeInt(0, Main.crocsListEquipment.Count)];
                     }
                     else
                     {
@@ -266,7 +268,7 @@ namespace CrocsItems.Interactables
             Util.PlaySound("Play_item_proc_clover", gameObject);
             Util.PlaySound("Play_item_proc_clover", gameObject);
 
-            EffectManager.SpawnEffect(ShrineofCrocs.shrineVFX, new EffectData
+            EffectManager.SpawnEffect(ShrineOfCrocs.shrineVFX, new EffectData
             {
                 origin = base.transform.position,
                 rotation = Quaternion.identity,

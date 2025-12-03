@@ -8,6 +8,9 @@ using BepInEx.Logging;
 using CrocsItems.Equipment;
 using CrocsItems.Interactables;
 using CrocsItems.Items;
+using CrocsItems.Items.Greens;
+using CrocsItems.Items.Jibbitz;
+using CrocsItems.Items.Reds;
 using HarmonyLib;
 using R2API;
 using R2API.ContentManagement;
@@ -32,7 +35,7 @@ namespace CrocsItems
         public const string PluginGUID = PluginAuthor + "." + PluginName;
         public const string PluginAuthor = "HIFU";
         public const string PluginName = "CrocsItems";
-        public const string PluginVersion = "1.1.0";
+        public const string PluginVersion = "1.2.0";
         public static ManualLogSource ModLogger;
         public static AssetBundle bundle;
         public static Main Instance;
@@ -52,6 +55,9 @@ namespace CrocsItems
         public static List<ItemDef> crocsList = new();
         public static List<EquipmentDef> crocsListEquipment = new();
 
+        public static Dictionary<ItemIndex, ItemIndex> crocItemToJibbitzPair = new();
+        public static Dictionary<EquipmentIndex, ItemIndex> crocEquipmentToJibbitzPair = new();
+
         public void Awake()
         {
             Instance = this;
@@ -61,6 +67,57 @@ namespace CrocsItems
             SetUpConfig();
             SetUpAssets();
             SetUpContent();
+            RoR2.RoR2Application.onLoad += OnLoad;
+
+            On.RoR2.CharacterModel.UpdateItemDisplay += OnUpdateItemDisplay;
+            On.RoR2.CharacterModel.SetEquipmentDisplay += OnSetEquipmentDisplay;
+        }
+
+        private void OnSetEquipmentDisplay(On.RoR2.CharacterModel.orig_SetEquipmentDisplay orig, CharacterModel self, EquipmentIndex newEquipmentIndex)
+        {
+            orig(self, newEquipmentIndex);
+            foreach (KeyValuePair<EquipmentIndex, ItemIndex> keyValuePair in crocEquipmentToJibbitzPair)
+            {
+                var crocEquipment = keyValuePair.Key;
+                var jibbitz = keyValuePair.Value;
+                if (newEquipmentIndex != crocEquipment || self.currentEquipmentDisplayIndex != crocEquipment)
+                {
+                    self.DisableItemDisplay(jibbitz);
+                }
+            }
+        }
+
+        private void OnLoad()
+        {
+            // weeehhh
+            if (ItemBase.DefaultEnabledCallback(CrocsSandals.instance) && ItemBase.DefaultEnabledCallback(SweetTreat.instance))
+            {
+                crocItemToJibbitzPair.Add(CrocsSandals.instance.ItemDef.itemIndex, SweetTreat.instance.ItemDef.itemIndex);
+            }
+
+            if (ItemBase.DefaultEnabledCallback(CrocsEchoWave.instance) && ItemBase.DefaultEnabledCallback(SquishyGlitterStar.instance))
+            {
+                crocItemToJibbitzPair.Add(CrocsEchoWave.instance.ItemDef.itemIndex, SquishyGlitterStar.instance.ItemDef.itemIndex);
+            }
+
+            if (EquipmentBase.DefaultEnabledCallback(CrocsClassic.instance) && ItemBase.DefaultEnabledCallback(BlackHeart.instance))
+            {
+                crocEquipmentToJibbitzPair.Add(CrocsClassic.instance.EquipmentDef.equipmentIndex, BlackHeart.instance.ItemDef.itemIndex);
+            }
+        }
+
+        private void OnUpdateItemDisplay(On.RoR2.CharacterModel.orig_UpdateItemDisplay orig, CharacterModel self, Inventory inventory)
+        {
+            orig(self, inventory);
+            foreach (KeyValuePair<ItemIndex, ItemIndex> keyValuePair in crocItemToJibbitzPair)
+            {
+                var crocItem = keyValuePair.Key;
+                var jibbitz = keyValuePair.Value;
+                if (inventory.GetItemCountEffective(crocItem) <= 0)
+                {
+                    self.DisableItemDisplay(jibbitz);
+                }
+            }
         }
 
         public void SetUpConfig()

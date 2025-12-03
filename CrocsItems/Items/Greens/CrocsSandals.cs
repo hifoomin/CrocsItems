@@ -19,13 +19,13 @@ namespace CrocsItems.Items.Greens
 
         public override string ItemPickupDesc => "Attacks heal all nearby allies for a percentage of damage dealt. Gain attack speed the longer you are in combat.";
 
-        public override string ItemFullDescription => "Attacks <style=cIsHealing>heal</style> all nearby allies for <style=cIsHealing>1%</style> <style=cStack>(+1% per stack)</style> of damage dealt. Gain <style=cIsDamage>2%</style> <style=cIsDamage>attack speed</style> on hit, up to <style=cIsDamage>+30%</style> <style=cStack>(+30% per stack)</style>.";
+        public override string ItemFullDescription => $"Attacks <style=cIsHealing>heal</style> all nearby allies for <style=cIsHealing>{baseDamagePercentHealing * 100f}%</style> <style=cStack>(+{stackDamagePercentHealing * 100f}% per stack)</style> of damage dealt. Gain <style=cIsDamage>{attackSpeedGainOnHit * 100f}%</style> <style=cIsDamage>attack speed</style> on hit, up to <style=cIsDamage>+{baseAttackSpeedBuffCap * attackSpeedGainOnHit * 100f}%</style> <style=cStack>(+{stackAttackSpeedBuffCap * attackSpeedGainOnHit * 100f}% per stack)</style>.";
 
         public override string ItemLore => "";
 
         public override ItemTier Tier => ItemTier.Tier2;
 
-        public override ItemTag[] ItemTags => [ItemTag.Healing, ItemTag.Damage];
+        public override ItemTag[] ItemTags => [ItemTag.Healing, ItemTag.Damage, ItemTag.CanBeTemporary];
 
         public override GameObject ItemModel => Main.bundle.LoadAsset<GameObject>("CrocsSandalsHolder.prefab");
 
@@ -37,6 +37,27 @@ namespace CrocsItems.Items.Greens
         public static Material matAttackSpeedOverlay;
 
         public static GameObject indicator;
+
+        [ConfigField("Attack Speed Gain On Hit", "Decimal.", 0.02f)]
+        public static float attackSpeedGainOnHit;
+
+        [ConfigField("Base Attack Speed Buff Cap", "", 15)]
+        public static int baseAttackSpeedBuffCap;
+
+        [ConfigField("Stack Attack Speed Buff Cap", "", 15)]
+        public static int stackAttackSpeedBuffCap;
+
+        [ConfigField("Attack Speed Buff Duration", "", 3f)]
+        public static float attackSpeedBuffDuration;
+
+        [ConfigField("Base Damage Percent Healing", "Decimal.", 0.01f)]
+        public static float baseDamagePercentHealing;
+
+        [ConfigField("Stack Damage Percent Healing", "Decimal.", 0.01f)]
+        public static float stackDamagePercentHealing;
+
+        [ConfigField("Healing Radius", "", 20f)]
+        public static float healingRadius;
 
         public override void Init()
         {
@@ -76,7 +97,7 @@ namespace CrocsItems.Items.Greens
             indicator = Addressables.LoadAssetAsync<GameObject>("5ba295c0a3919a544939e6efe1ff17b3").WaitForCompletion().InstantiateClone("Pocket Plutonium Visual", true);
             // guid is nearby damage bonus indicator
             var radiusTrans = indicator.transform.Find("Radius, Spherical");
-            radiusTrans.localScale = Vector3.one * 20f * 2f; // radius x 2
+            radiusTrans.localScale = Vector3.one * healingRadius * 2f; // radius x 2
 
             var newRadiusMat = new Material(Addressables.LoadAssetAsync<Material>("efcdb7ab1fe128a4eb2d79a8024c25bd").WaitForCompletion());
             // guid is mat nearby damage bonus range indicator
@@ -101,14 +122,14 @@ namespace CrocsItems.Items.Greens
         }
         private void OnInventoryChangedGlobal(CharacterBody body)
         {
-            body.AddItemBehavior<CrocsSandalsController>(GetCount(body));
+            body.AddItemBehavior<CrocsSandalsController>(GetCountEffective(body));
         }
 
         private void CalcAttackSpeedBoost(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args)
         {
             if (sender)
             {
-                args.baseAttackSpeedAdd += 0.02f * sender.GetBuffCount(attackSpeedBuff);
+                args.baseAttackSpeedAdd += attackSpeedGainOnHit * sender.GetBuffCount(attackSpeedBuff);
             }
         }
 
@@ -120,11 +141,11 @@ namespace CrocsItems.Items.Greens
                 return;
             }
 
-            var stack = GetCount(attackerBody);
+            var stack = GetCountEffective(attackerBody);
 
             if (stack > 0)
             {
-                var healValue = report.damageDealt * 0.01f * stack;
+                var healValue = report.damageDealt * (baseDamagePercentHealing + stackDamagePercentHealing * (stack - 1));
 
                 var teamMask = default(TeamMask);
                 teamMask.AddTeam(attackerBody.teamComponent.teamIndex);
@@ -134,7 +155,7 @@ namespace CrocsItems.Items.Greens
                 var sphereSearch = new SphereSearch();
                 sphereSearch.origin = attackerBody.corePosition;
                 sphereSearch.mask = LayerIndex.entityPrecise.mask;
-                sphereSearch.radius = 20f;
+                sphereSearch.radius = attackerBody.radius + healingRadius;
                 sphereSearch.RefreshCandidates();
                 sphereSearch.FilterCandidatesByHurtBoxTeam(teamMask);
                 sphereSearch.FilterCandidatesByDistinctHurtBoxEntities();
@@ -165,13 +186,13 @@ namespace CrocsItems.Items.Greens
                 }
 
                 var buffCount = attackerBody.GetBuffCount(attackSpeedBuff);
-                var maxBuffCount = 15 * stack;
+                var maxBuffCount = baseAttackSpeedBuffCap + stackAttackSpeedBuffCap * (stack - 1);
 
-                RefreshTimedBuffs(attackerBody, attackSpeedBuff, 3f);
+                RefreshTimedBuffs(attackerBody, attackSpeedBuff, attackSpeedBuffDuration);
 
                 if (buffCount < maxBuffCount)
                 {
-                    attackerBody.AddTimedBuff(attackSpeedBuff, 3f);
+                    attackerBody.AddTimedBuff(attackSpeedBuff, attackSpeedBuffDuration);
                     crocsSandalsController.counter++;
                 }
 
@@ -186,7 +207,7 @@ namespace CrocsItems.Items.Greens
                     return;
                 }
 
-                if (buffCount > 0 && crocsSandalsController.counter >= maxBuffCount && buffCount % maxBuffCount == 0) // add overlay vfx and play sound every 20 buff count
+                if (buffCount > 0 && crocsSandalsController.counter >= maxBuffCount && buffCount % maxBuffCount == 0) // add overlay vfx and play sound every 15 buff count
                 {
                     var temporaryOverlay = TemporaryOverlayManager.AddOverlay(modelTransform.gameObject);
                     temporaryOverlay.duration = buffCount / maxBuffCount; // decrease overlay duration the more buffs you get, because it gets a lot easier with more stacks
@@ -503,6 +524,76 @@ namespace CrocsItems.Items.Greens
     }
 
 );
+            /*
+            i.Add("HereticBody",
+
+                                                    new ItemDisplayRule()
+                                                    {
+                                                        ruleType = ItemDisplayRuleType.ParentedPrefab,
+                                                        childName = "Head",
+                                                        localPos = new Vector3(0.28566F, 0.77912F, 0.02661F),
+                                                        localAngles = new Vector3(83.31801F, 230.3002F, 325.4743F),
+                                                        localScale = new Vector3(0.36022F, 0.36022F, 0.36022F),
+
+                                                        followerPrefab = crocsSandalsIDRS,
+                                                        limbMask = LimbFlags.None,
+                                                        followerPrefabAddress = new AssetReferenceGameObject("")
+                                                    }
+
+                                                );
+            */
+            // massive desync
+
+            i.Add("FalseSonBody",
+
+                            new ItemDisplayRule()
+                            {
+                                ruleType = ItemDisplayRuleType.ParentedPrefab,
+                                childName = "Head",
+                                localPos = new Vector3(0.01269F, 0.81384F, -0.13292F),
+                                localAngles = new Vector3(83.13184F, 330.8541F, 328.6311F),
+                                localScale = new Vector3(0.21949F, 0.21949F, 0.21949F),
+
+                                followerPrefab = crocsSandalsIDRS,
+                                limbMask = LimbFlags.None,
+                                followerPrefabAddress = new AssetReferenceGameObject("")
+                            }
+
+                        );
+
+            i.Add("DroneTechBody",
+
+                            new ItemDisplayRule()
+                            {
+                                ruleType = ItemDisplayRuleType.ParentedPrefab,
+                                childName = "ClawSpin",
+                                localPos = new Vector3(0.19522F, -0.00201F, 0.32538F),
+                                localAngles = new Vector3(0.63566F, 142.7164F, 90.60924F),
+                                localScale = new Vector3(0.13742F, 0.13742F, 0.13742F),
+
+                                followerPrefab = crocsSandalsIDRS,
+                                limbMask = LimbFlags.None,
+                                followerPrefabAddress = new AssetReferenceGameObject("")
+                            }
+
+                        );
+
+            i.Add("DrifterBody",
+
+    new ItemDisplayRule()
+    {
+        ruleType = ItemDisplayRuleType.ParentedPrefab,
+        childName = "Head",
+        localPos = new Vector3(-0.3397F, -0.2102F, 0.0175F),
+        localAngles = new Vector3(13.16967F, 91.87444F, 0.32537F),
+        localScale = new Vector3(0.16288F, 0.16288F, 0.16288F),
+
+        followerPrefab = crocsSandalsIDRS,
+        limbMask = LimbFlags.None,
+        followerPrefabAddress = new AssetReferenceGameObject("")
+    }
+
+);
 
             return i;
         }
@@ -512,8 +603,8 @@ namespace CrocsItems.Items.Greens
     {
         public int counter = 0;
         public GameObject radiusIndicator;
-        public float radiusSquared = 400f;
-        public float distance = 40f;
+        public float radiusSquared = CrocsSandals.healingRadius * CrocsSandals.healingRadius;
+        public float distance = CrocsSandals.healingRadius * 2f;
 
         public void Start()
         {

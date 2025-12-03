@@ -21,13 +21,13 @@ namespace CrocsItems.Items.Reds
 
         public override string ItemPickupDesc => "Sprinting builds up movement speed that can be discharged for massive impact damage.";
 
-        public override string ItemFullDescription => "Sprinting builds up to <style=cIsUtility>100% movement speed</style>. <style=cIsDamage>Ramming</style> into an enemy while sprinting deals up to <style=cIsDamage>3000%</style> <style=cStack>(+3000% per stack)</style> <style=cIsDamage>damage</style> based on movement speed.";
+        public override string ItemFullDescription => $"Sprinting builds up to <style=cIsUtility>{maximumBuffCount}% movement speed</style>. <style=cIsDamage>Ramming</style> into an enemy while sprinting deals up to <style=cIsDamage>{baseMaximumDamage * 100f}%</style> <style=cStack>(+{stackMaximumDamage * 100f}% per stack)</style> <style=cIsDamage>damage</style> based on movement speed.";
 
         public override string ItemLore => "";
 
         public override ItemTier Tier => ItemTier.Tier3;
 
-        public override ItemTag[] ItemTags => [ItemTag.AIBlacklist, ItemTag.BrotherBlacklist, ItemTag.Utility, ItemTag.Damage];
+        public override ItemTag[] ItemTags => [ItemTag.AIBlacklist, ItemTag.BrotherBlacklist, ItemTag.Utility, ItemTag.Damage, ItemTag.CanBeTemporary];
 
         public override GameObject ItemModel => Main.bundle.LoadAsset<GameObject>("CrocsEchoWaveHolder.prefab");
 
@@ -42,6 +42,42 @@ namespace CrocsItems.Items.Reds
         public static GameObject impactParticles;
 
         public static GameObject impactExplosion;
+
+        [ConfigField("Buff Change Interval", "How quickly buffs get added or removed.", 0.15f)]
+        public static float buffChangeInterval;
+
+        [ConfigField("Buff Count To Add", "1 Buff = 1% Movement Speed. The amount of buffs to add per Buff Change Interval. Time to reach maximum movement speed from zero = Maximum Buff Count * Buff Change Interval / Buff Count To Add.", 2)]
+        public static int buffCountToAdd;
+
+        [ConfigField("Buff Count To Remove", "1 Buff = 1% Movement Speed. The amount of buffs to remove per Buff Change Interval. Time to lose all movement speed from maximum = Maximum Buff Count * Buff Change Interval / Buff Count To Remove.", 4)]
+        public static int buffCountToRemove;
+
+        [ConfigField("Maximum Buff Count", "1 Buff = 1% Movement Speed. Also dictates the maximum movement speed", 100)]
+        public static int maximumBuffCount;
+
+        [ConfigField("Minimum Buff Count For Impact", "1 Buff = 1% Movement Speed. Not a percentage. Enables ramming into enemies once this buff amount threshold is reached.", 100)]
+        public static int minimumBuffCountForImpact;
+
+        [ConfigField("Buff Count After Impact", "1 Buff = 1% Movement Speed. Not a percentage. Percent movement speed increase after impact = Buff Count After Impact / Maximum Buff Count * 100.", 25)]
+        public static int buffCountAfterImpact;
+
+        [ConfigField("Base Minimum Damage", "Decimal.", 10f)]
+        public static float baseMinimumDamage;
+
+        [ConfigField("Stack Minimum Damage", "Decimal.", 10f)]
+        public static float stackMinimumDamage;
+
+        [ConfigField("Base Maximum Damage", "Decimal.", 30f)]
+        public static float baseMaximumDamage;
+
+        [ConfigField("Stack Maximum Damage", "Decimal.", 30f)]
+        public static float stackMaximumDamage;
+
+        [ConfigField("Movement Speed Scalar", "The value that controls the movement speed required to reach maximum damage. Impact damage = Minimum Damage + ((Current Movement Speed, capped at 10.15 * Movement Speed Scalar) - 10.15) / ((10.15 * Movement Speed Scalar) - 10.15) * (Maximum Damage - Minimum Damage)\nNote: 10.15 is hardcoded here.", 4f)]
+        public static float movementSpeedScalar;
+
+        [ConfigField("Proc Coefficient", "", 1f)]
+        public static float procCoefficient;
 
         public override void Init()
         {
@@ -63,7 +99,6 @@ namespace CrocsItems.Items.Reds
             speedBuff.ignoreGrowthNectar = false;
             speedBuff.isDOT = false;
             speedBuff.isCooldown = false;
-            speedBuff.name = "Crocs Echo Wave Movement Speed - 1% Per";
 
             ContentAddition.AddBuffDef(speedBuff);
         }
@@ -175,7 +210,7 @@ namespace CrocsItems.Items.Reds
                 return;
             }
 
-            body.AddItemBehavior<CrocsEchoWaveController>(GetCount(body));
+            body.AddItemBehavior<CrocsEchoWaveController>(GetCountEffective(body));
         }
 
         private void CalcSpeedBoost(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args)
@@ -464,6 +499,76 @@ namespace CrocsItems.Items.Reds
     }
 
 );
+            /*
+            i.Add("HereticBody",
+
+                                        new ItemDisplayRule()
+                                        {
+                                            ruleType = ItemDisplayRuleType.ParentedPrefab,
+                                            childName = "FootR",
+                                            localPos = new Vector3(-0.14371F, 0.40343F, -0.02072F),
+                                            localAngles = new Vector3(83.8206F, 252.218F, 180.0918F),
+                                            localScale = new Vector3(0.60634F, 0.45743F, 0.52178F),
+
+                                            followerPrefab = crocsEchoWaveIDRS,
+                                            limbMask = LimbFlags.None,
+                                            followerPrefabAddress = new AssetReferenceGameObject("")
+                                        }
+
+                                    );
+            */
+            // massive desync
+
+            i.Add("FalseSonBody",
+
+                            new ItemDisplayRule()
+                            {
+                                ruleType = ItemDisplayRuleType.ParentedPrefab,
+                                childName = "FootR",
+                                localPos = new Vector3(0.03697F, 0.18287F, 0.00018F),
+                                localAngles = new Vector3(49.35352F, 277.774F, 195.4307F),
+                                localScale = new Vector3(0.25144F, 0.25144F, 0.25144F),
+
+                                followerPrefab = crocsEchoWaveIDRS,
+                                limbMask = LimbFlags.None,
+                                followerPrefabAddress = new AssetReferenceGameObject("")
+                            }
+
+                        );
+
+            i.Add("DroneTechBody",
+
+                            new ItemDisplayRule()
+                            {
+                                ruleType = ItemDisplayRuleType.ParentedPrefab,
+                                childName = "FootR",
+                                localPos = new Vector3(0.16496F, 0.03804F, -0.00802F),
+                                localAngles = new Vector3(322.1032F, 272.5129F, 199.1968F),
+                                localScale = new Vector3(0.16452F, 0.16657F, 0.14635F),
+
+                                followerPrefab = crocsEchoWaveIDRS,
+                                limbMask = LimbFlags.None,
+                                followerPrefabAddress = new AssetReferenceGameObject("")
+                            }
+
+                        );
+
+            i.Add("DrifterBody",
+
+    new ItemDisplayRule()
+    {
+        ruleType = ItemDisplayRuleType.ParentedPrefab,
+        childName = "FootR",
+        localPos = new Vector3(-0.10567F, 0.10285F, 0.00067F),
+        localAngles = new Vector3(85.09835F, 14.48507F, 284.095F),
+        localScale = new Vector3(0.17322F, 0.16604F, 0.16604F),
+
+        followerPrefab = crocsEchoWaveIDRS,
+        limbMask = LimbFlags.None,
+        followerPrefabAddress = new AssetReferenceGameObject("")
+    }
+
+);
 
             return i;
         }
@@ -472,15 +577,14 @@ namespace CrocsItems.Items.Reds
     public class CrocsEchoWaveController : CharacterBody.ItemBehavior
     {
         public float timer;
-        public float buffChangeInterval = 0.15f;
-        public int buffCountToChange = 2;
+        public float buffChangeInterval = CrocsEchoWave.buffChangeInterval;
+        public int buffCountToAdd = CrocsEchoWave.buffCountToAdd;
+        public int buffCountToRemove = CrocsEchoWave.buffCountToRemove;
 
-        public int maxBuffCount = 100;
-        public int minBuffCount = 100;
-        public int buffCountAfterImpact = 25;
+        public int maxBuffCount = CrocsEchoWave.maximumBuffCount;
+        public int minBuffCountForImpactCheck = CrocsEchoWave.minimumBuffCountForImpact;
+        public int buffCountAfterImpact = CrocsEchoWave.buffCountAfterImpact;
         public int buffCount;
-        public float minImpactDamage = 10f;
-        public float maxImpactDamage = 30f;
 
         public OverlapAttack attackerOverlap;
 
@@ -489,25 +593,17 @@ namespace CrocsItems.Items.Reds
         public GameObject hitBoxObject;
         public HitBoxGroup hitBoxGroup;
         public HitBox hitBox;
-        public float collisionDisableTime = 0.5f;
-        public int cachedLayer;
         public bool successfullyHit = false;
-
-        public bool addedOverlay = false;
 
         public List<HurtBox> lastHitHurtBoxes = new();
 
-        public TemporaryOverlayInstance temporaryOverlayInstance;
-
         public void Start()
         {
-            cachedLayer = gameObject.layer;
-
             modelLocator = GetComponent<ModelLocator>();
             modelTransform = modelLocator?.modelTransform;
             if (modelTransform && hitBoxObject == null)
             {
-                hitBoxObject = new("Croc Echo Waves HitBox")
+                hitBoxObject = new("Crocs Echo Wave HitBox")
                 {
                     layer = LayerIndex.defaultLayer.intVal
                 };
@@ -529,9 +625,9 @@ namespace CrocsItems.Items.Reds
             {
                 if (body.isSprinting)
                 {
-                    buffCount += buffCountToChange;
+                    buffCount += buffCountToAdd;
                     buffCount = Mathf.Min(buffCount, maxBuffCount);
-                    if (buffCount >= minBuffCount)
+                    if (buffCount >= minBuffCountForImpactCheck)
                     {
                         CheckImpact();
                         // AddOverlay();
@@ -539,7 +635,7 @@ namespace CrocsItems.Items.Reds
                 }
                 else
                 {
-                    buffCount -= buffCountToChange;
+                    buffCount -= buffCountToRemove;
                     buffCount = Mathf.Max(0, buffCount);
                 }
 
@@ -552,7 +648,8 @@ namespace CrocsItems.Items.Reds
         public void CheckImpact()
         {
             var sprintingSpeed = 7f * 1.45f;
-            var scaledDamage = Util.Remap(body.moveSpeed, sprintingSpeed, sprintingSpeed * 4f, minImpactDamage * stack, maxImpactDamage * stack); // about 50% effectiveness with this item alone -- should be doing nearly 2000% impact damage
+            var cappedSpeed = Mathf.Min(sprintingSpeed * CrocsEchoWave.movementSpeedScalar, body.moveSpeed);
+            var scaledDamage = Util.Remap(cappedSpeed, sprintingSpeed, sprintingSpeed * CrocsEchoWave.movementSpeedScalar, CrocsEchoWave.baseMinimumDamage + CrocsEchoWave.stackMinimumDamage * (stack - 1), CrocsEchoWave.baseMaximumDamage + CrocsEchoWave.stackMaximumDamage * (stack - 1)); // about 50% effectiveness with this item alone -- should be doing nearly 2000% impact damage
             var finalDamage = scaledDamage;
             attackerOverlap = new()
             {
@@ -564,7 +661,7 @@ namespace CrocsItems.Items.Reds
                 pushAwayForce = 4000f,
                 attackerFiltering = AttackerFiltering.NeverHitSelf,
                 // impactSound = null,
-                procCoefficient = 1f,
+                procCoefficient = CrocsEchoWave.procCoefficient,
                 isCrit = body.RollCrit(),
                 hitBoxGroup = hitBoxObject.GetComponent<HitBoxGroup>()
             };
@@ -628,6 +725,21 @@ namespace CrocsItems.Items.Reds
             }
 
             lastHitHurtBoxes.Clear();
+        }
+
+        public void OnDisable()
+        {
+            RemoveBuff();
+        }
+
+        public void OnDestroy()
+        {
+            RemoveBuff();
+        }
+
+        public void RemoveBuff()
+        {
+            body.SetBuffCount(CrocsEchoWave.speedBuff.buffIndex, 0);
         }
     }
 }

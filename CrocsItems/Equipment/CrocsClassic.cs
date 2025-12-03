@@ -16,7 +16,7 @@ namespace CrocsItems.Equipment
 
         public override string EquipmentPickupDesc => "Switch between an offensive stance and a defensive stance.";
 
-        public override string EquipmentFullDescription => "<style=cIsUtility>Switch</style> between an <style=cIsDamage>offensive stance</style>, gaining <style=cIsDamage>explosive attacks</style> for <style=cIsDamage>20% TOTAL damage</style> and <style=cIsDamage>+20% critical chance</style>, or a <style=cIsHealing>defensive</style> stance, gaining <style=cIsHealing>30</style> armor, <style=cIsHealing>+3 hp/s health regeneration</style> and <style=cIsHealing>40% increased healing</style>.";
+        public override string EquipmentFullDescription => $"<style=cIsUtility>Switch</style> between an <style=cIsDamage>offensive</style> stance, gaining <style=cIsDamage>explosive attacks</style> for <style=cIsDamage>{explosionTotalDamage * 100f}% TOTAL damage</style> and <style=cIsDamage>+{criticalChance}% critical chance</style>, or a <style=cIsHealing>defensive</style> stance, gaining <style=cIsHealing>{armor}</style> armor, <style=cIsHealing>+{healthRegeneration} hp/s health regeneration</style> and <style=cIsHealing>{healingIncrease * 100f}% increased healing</style>.";
 
         public override string EquipmentLore => "";
 
@@ -24,7 +24,7 @@ namespace CrocsItems.Equipment
 
         public override Sprite EquipmentIcon => Main.bundle.LoadAsset<Sprite>("texCrocsClassic.png");
 
-        public override float Cooldown => 10f;
+        public override float Cooldown => cooldown;
 
         public override bool IsCroc => true;
 
@@ -37,6 +37,27 @@ namespace CrocsItems.Equipment
 
         public static Material matOffensiveOverlay;
         public static Material matDefensiveOverlay;
+
+        [ConfigField("Cooldown", "", 10f)]
+        public static float cooldown;
+
+        [ConfigField("Offensive Stance - Explosion Radius", "", 6f)]
+        public static float explosionRadius;
+
+        [ConfigField("Offensive Stance - Explosion TOTAL Damage", "Decimal.", 0.2f)]
+        public static float explosionTotalDamage;
+
+        [ConfigField("Offensive Stance - Critical Chance", "", 20f)]
+        public static float criticalChance;
+
+        [ConfigField("Defensive Stance - Armor", "", 30f)]
+        public static float armor;
+
+        [ConfigField("Defensive Stance - Health Regeneration", "", 3f)]
+        public static float healthRegeneration;
+
+        [ConfigField("Defensive Stance - Healing Increase", "Decimal.", 0.4f)]
+        public static float healingIncrease;
 
         public override void Init()
         {
@@ -58,7 +79,6 @@ namespace CrocsItems.Equipment
             offensiveBuff.iconSprite = Addressables.LoadAssetAsync<Sprite>("f0d295f0817aef341aad8edc6350e781").WaitForCompletion();
             // guid is tex buff full crit icon
             offensiveBuff.buffColor = new Color32(30, 167, 217, 255);
-            offensiveBuff.name = "Crocs Classic | Offensive Stance - Explosive Attacks, +20% Movement Speed, +20% Crit Chance";
 
             ContentAddition.AddBuffDef(offensiveBuff);
 
@@ -73,7 +93,6 @@ namespace CrocsItems.Equipment
             defensiveBuff.iconSprite = Addressables.LoadAssetAsync<Sprite>("c9ccdef9734715a408aa90e9e37735e4").WaitForCompletion();
             // guid is tex buff body armor
             defensiveBuff.buffColor = new Color32(30, 217, 83, 255);
-            defensiveBuff.name = "Crocs Classic | Defensive Stance - +30 Armor, +3 hp/s regeneration, +40% Healing";
 
             ContentAddition.AddBuffDef(defensiveBuff);
         }
@@ -115,7 +134,7 @@ namespace CrocsItems.Equipment
             var body = self.body;
             if (body && body.HasBuff(defensiveBuff))
             {
-                amount *= 1.4f;
+                amount *= 1f + healingIncrease;
             }
             return orig(self, amount, procChainMask, nonRegen);
         }
@@ -147,14 +166,11 @@ namespace CrocsItems.Equipment
 
             damageInfo.procChainMask.AddModdedProc(crocsClassic);
 
-            var damageCoefficient = 0.2f;
-            var aoe = 6f;
-
-            var totalDamage = Util.OnHitProcDamage(damageInfo.damage, attackerBody.damage, damageCoefficient);
+            var totalDamage = Util.OnHitProcDamage(damageInfo.damage, attackerBody.damage, explosionTotalDamage);
 
             var effectData = new EffectData();
             effectData.origin = damageInfo.position;
-            effectData.scale = aoe;
+            effectData.scale = explosionRadius;
             effectData.rotation = Util.QuaternionSafeLookRotation(damageInfo.force);
 
             EffectManager.SpawnEffect(vfx, effectData, true);
@@ -163,7 +179,7 @@ namespace CrocsItems.Equipment
             blastAttack.position = damageInfo.position;
             blastAttack.baseDamage = totalDamage;
             blastAttack.baseForce = 0f;
-            blastAttack.radius = aoe;
+            blastAttack.radius = explosionRadius;
             blastAttack.attacker = damageInfo.attacker;
             blastAttack.inflictor = null;
             blastAttack.teamIndex = TeamComponent.GetObjectTeam(attacker);
@@ -180,27 +196,36 @@ namespace CrocsItems.Equipment
         {
             if (sender.HasBuff(offensiveBuff))
             {
-                args.critAdd += 20f;
+                args.critAdd += criticalChance;
             }
             if (sender.HasBuff(defensiveBuff))
             {
-                args.armorAdd += 30f;
-                args.baseRegenAdd += 3f + (3f * 0.2f * (sender.level - 1));
+                args.armorAdd += armor;
+                args.baseRegenAdd += healthRegeneration + (healthRegeneration * 0.2f * (sender.level - 1));
             }
         }
 
         protected override bool ActivateEquipment(EquipmentSlot slot)
         {
+            // Main.ModLogger.LogError("ActivateEquipment called");
             slot.subcooldownTimer = 1f;
 
             var body = slot.characterBody;
             if (!body)
             {
+                // Main.ModLogger.LogError("body in slot not found");
                 return false;
+            }
+
+            if (!body.GetComponent<CrocsClassicController>())
+            {
+                // Main.ModLogger.LogError("Adding CrocsClassicController");
+                body.gameObject.AddComponent<CrocsClassicController>();
             }
 
             if (!body.HasBuff(offensiveBuff))
             {
+                // Main.ModLogger.LogError("Adding Offensive Buff");
                 AddOverlay(body, matOffensiveOverlay);
 
                 body.AddBuff(offensiveBuff.buffIndex);
@@ -215,6 +240,7 @@ namespace CrocsItems.Equipment
 
             if (body.HasBuff(offensiveBuff) && !body.HasBuff(defensiveBuff))
             {
+                // Main.ModLogger.LogError("Adding Defensive Buff");
                 AddOverlay(body, matDefensiveOverlay);
 
                 body.RemoveBuff(offensiveBuff.buffIndex);
@@ -526,7 +552,149 @@ namespace CrocsItems.Equipment
 
 );
 
+            /*
+            i.Add("HereticBody",
+
+                                        new ItemDisplayRule()
+                                        {
+                                            ruleType = ItemDisplayRuleType.ParentedPrefab,
+                                            childName = "FootL",
+                                            localPos = new Vector3(0.15547F, -0.23698F, 0.11543F),
+                                            localAngles = new Vector3(279.524F, 275.852F, 188.6106F),
+                                            localScale = new Vector3(0.50722F, 0.33101F, 0.4292F),
+
+                                            followerPrefab = crocsClassicIDRS,
+                                            limbMask = LimbFlags.None,
+                                            followerPrefabAddress = new AssetReferenceGameObject("")
+                                        }
+
+                                    );
+            */
+            // massive desync
+
+            i.Add("FalseSonBody",
+
+                            new ItemDisplayRule()
+                            {
+                                ruleType = ItemDisplayRuleType.ParentedPrefab,
+                                childName = "FootL",
+                                localPos = new Vector3(0.03963F, 0.13093F, 0.00556F),
+                                localAngles = new Vector3(50.7015F, 267.4674F, 187.5229F),
+                                localScale = new Vector3(0.21302F, 0.23862F, 0.20829F),
+
+                                followerPrefab = crocsClassicIDRS,
+                                limbMask = LimbFlags.None,
+                                followerPrefabAddress = new AssetReferenceGameObject("")
+                            }
+
+                        );
+
+            i.Add("DroneTechBody",
+
+                            new ItemDisplayRule()
+                            {
+                                ruleType = ItemDisplayRuleType.ParentedPrefab,
+                                childName = "FootL",
+                                localPos = new Vector3(-0.13173F, -0.04097F, 0.00603F),
+                                localAngles = new Vector3(36.79837F, 85.09209F, 358.2509F),
+                                localScale = new Vector3(0.15286F, 0.15286F, 0.15286F),
+
+                                followerPrefab = crocsClassicIDRS,
+                                limbMask = LimbFlags.None,
+                                followerPrefabAddress = new AssetReferenceGameObject("")
+                            }
+
+                        );
+
+            i.Add("DrifterBody",
+
+    new ItemDisplayRule()
+    {
+        ruleType = ItemDisplayRuleType.ParentedPrefab,
+        childName = "FootL",
+        localPos = new Vector3(0.08343F, -0.10277F, 0.00888F),
+        localAngles = new Vector3(276.437F, 212.881F, 232.3374F),
+        localScale = new Vector3(0.15443F, 0.15409F, 0.15409F),
+
+        followerPrefab = crocsClassicIDRS,
+        limbMask = LimbFlags.None,
+        followerPrefabAddress = new AssetReferenceGameObject("")
+    }
+
+);
+
             return i;
+        }
+    }
+
+    public class CrocsClassicController : MonoBehaviour
+    {
+        public CharacterBody characterBody;
+        public EquipmentSlot equipmentSlot;
+        public void OnEnable()
+        {
+            // Main.ModLogger.LogError("OnEnable called");
+            equipmentSlot = GetComponent<EquipmentSlot>();
+            if (equipmentSlot)
+            {
+                characterBody = equipmentSlot.characterBody;
+            }
+
+            if (characterBody)
+            {
+                characterBody.onInventoryChanged += OnBodyInventoryChanged;
+            }
+        }
+
+        private void OnBodyInventoryChanged()
+        {
+            // Main.ModLogger.LogError("OnBodyInventoryChanged called");
+            var inventory = equipmentSlot.inventory;
+            if (!inventory)
+            {
+                return;
+            }
+
+            var activeEquipmentSlot = equipmentSlot.activeEquipmentSlot;
+
+            var equipmentState = inventory.GetEquipment(activeEquipmentSlot, inventory.FindBestEquipmentSetIndex(true)); // 0 shoulda worked logically but nah LOL
+            if (equipmentState.equipmentIndex != EquipmentIndex.None)
+            {
+                var equipmentIndex = equipmentState.equipmentIndex;
+                if (equipmentIndex != CrocsClassic.instance.EquipmentDef.equipmentIndex)
+                {
+                    // Main.ModLogger.LogError($"{EquipmentCatalog.GetEquipmentDef(equipmentIndex)}'s index does not equal crocs index so trying to remove buffs");
+                    RemoveBuffs();
+                }
+            }
+        }
+
+        public void OnDisable()
+        {
+            // Main.ModLogger.LogError("OnDisable called");
+            RemoveBuffs();
+            characterBody.onInventoryChanged -= OnBodyInventoryChanged;
+        }
+
+        public void OnDestroy()
+        {
+            // Main.ModLogger.LogError("OnDestroy called");
+            RemoveBuffs();
+            characterBody.onInventoryChanged -= OnBodyInventoryChanged;
+        }
+
+        public void RemoveBuffs()
+        {
+            // Main.ModLogger.LogError("RemoveBuffs called");
+            if (characterBody.HasBuff(CrocsClassic.defensiveBuff))
+            {
+                characterBody.RemoveBuff(CrocsClassic.defensiveBuff);
+            }
+
+            if (characterBody.HasBuff(CrocsClassic.offensiveBuff))
+            {
+                characterBody.RemoveBuff(CrocsClassic.offensiveBuff);
+            }
         }
     }
 }

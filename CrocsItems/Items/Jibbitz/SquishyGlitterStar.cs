@@ -7,6 +7,7 @@ using UnityEngine.AddressableAssets;
 
 namespace CrocsItems.Items.Jibbitz
 {
+    [ConfigSection("Items :: Squishy Glitter Star")]
     public class SquishyGlitterStar : ItemBase<SquishyGlitterStar>
     {
         public override string ItemName => "Squishy Glitter Star";
@@ -15,7 +16,7 @@ namespace CrocsItems.Items.Jibbitz
 
         public override string ItemPickupDesc => "While you have a Crocs item, increase jump height and sprinting speed.";
 
-        public override string ItemFullDescription => "While you have a <style=cIsUtility>Crocs</style> item, increase <style=cIsUtility>jump height</style> by <style=cIsUtility>30%</style> <style=cStack>(+30% per stack)</style> and <style=cIsUtility>sprinting speed</style> by <style=cIsUtility>20%</style> <style=cStack>(+20% per stack)</style>.";
+        public override string ItemFullDescription => $"While you have a <style=cIsUtility>Crocs</style> item, increase <style=cIsUtility>jump height</style> by <style=cIsUtility>{baseJumpHeight * 100f}%</style> <style=cStack>(+{stackJumpHeight * 100f}% per stack)</style> and <style=cIsUtility>sprinting speed</style> by <style=cIsUtility>{baseSprintingSpeed * 100f}%</style> <style=cStack>(+{stackSprintingSpeed * 100f}% per stack)</style>.";
 
         public override string ItemLore => "";
 
@@ -31,6 +32,18 @@ namespace CrocsItems.Items.Jibbitz
 
         public override bool IsCroc => false;
         public override bool IsJibbit => true;
+
+        [ConfigField("Base Jump Height", "Decimal.", 0.3f)]
+        public static float baseJumpHeight;
+
+        [ConfigField("Stack Jump Height", "Decimal.", 0.3f)]
+        public static float stackJumpHeight;
+
+        [ConfigField("Base Sprinting Speed", "Decimal.", 0.2f)]
+        public static float baseSprintingSpeed;
+
+        [ConfigField("Stack Sprinting Speed", "Decimal.", 0.2f)]
+        public static float stackSprintingSpeed;
 
         public override void Init()
         {
@@ -49,8 +62,8 @@ namespace CrocsItems.Items.Jibbitz
             var hasAnyCrocs = Main.HasAnyCrocs(sender) || Main.HasAnyCrocsEquipment(sender);
             if (stack > 0 && hasAnyCrocs)
             {
-                args.sprintSpeedAdd += 0.2f * stack;
-                args.jumpPowerMultAdd += 0.3f * stack;
+                args.sprintSpeedAdd += baseSprintingSpeed + stackSprintingSpeed * (stack - 1);
+                args.jumpPowerMultAdd += baseJumpHeight + stackJumpHeight * (stack - 1);
             }
         }
 
@@ -323,6 +336,76 @@ namespace CrocsItems.Items.Jibbitz
         localPos = new Vector3(-0.63388F, -0.48715F, -0.06084F),
         localAngles = new Vector3(340.674F, 342.4554F, 207.807F),
         localScale = new Vector3(0.12722F, 0.12722F, 0.12722F),
+
+        followerPrefab = squishyGlitterStarIDRS,
+        limbMask = LimbFlags.None,
+        followerPrefabAddress = new AssetReferenceGameObject("")
+    }
+
+);
+            /*
+            i.Add("HereticBody",
+
+                                                    new ItemDisplayRule()
+                                                    {
+                                                        ruleType = ItemDisplayRuleType.ParentedPrefab,
+                                                        childName = "FootR",
+                                                        localPos = new Vector3(0.11327F, 0.65168F, 0.03705F),
+                                                        localAngles = new Vector3(84.99532F, 329.3675F, 210.1704F),
+                                                        localScale = new Vector3(0.32767F, 0.32767F, 0.32767F),
+
+                                                        followerPrefab = squishyGlitterStarIDRS,
+                                                        limbMask = LimbFlags.None,
+                                                        followerPrefabAddress = new AssetReferenceGameObject("")
+                                                    }
+
+                                                );
+            */
+            // massive desync
+
+            i.Add("FalseSonBody",
+
+                            new ItemDisplayRule()
+                            {
+                                ruleType = ItemDisplayRuleType.ParentedPrefab,
+                                childName = "FootR",
+                                localPos = new Vector3(0.23143F, 0.23851F, 0.00255F),
+                                localAngles = new Vector3(358.9553F, 339.3062F, 205.8068F),
+                                localScale = new Vector3(0.14548F, 0.14548F, 0.14548F),
+
+                                followerPrefab = squishyGlitterStarIDRS,
+                                limbMask = LimbFlags.None,
+                                followerPrefabAddress = new AssetReferenceGameObject("")
+                            }
+
+                        );
+
+            i.Add("DroneTechBody",
+
+                            new ItemDisplayRule()
+                            {
+                                ruleType = ItemDisplayRuleType.ParentedPrefab,
+                                childName = "FootR",
+                                localPos = new Vector3(0.18928F, -0.07418F, 0.01394F),
+                                localAngles = new Vector3(332.6079F, 271.2307F, 154.9987F),
+                                localScale = new Vector3(0.08752F, 0.08752F, 0.08752F),
+
+                                followerPrefab = squishyGlitterStarIDRS,
+                                limbMask = LimbFlags.None,
+                                followerPrefabAddress = new AssetReferenceGameObject("")
+                            }
+
+                        );
+
+            i.Add("DrifterBody",
+
+    new ItemDisplayRule()
+    {
+        ruleType = ItemDisplayRuleType.ParentedPrefab,
+        childName = "FootR",
+        localPos = new Vector3(-0.02879F, 0.20615F, -0.01217F),
+        localAngles = new Vector3(81.77789F, 84.55266F, 313.1673F),
+        localScale = new Vector3(0.09425F, 0.09425F, 0.09425F),
 
         followerPrefab = squishyGlitterStarIDRS,
         limbMask = LimbFlags.None,

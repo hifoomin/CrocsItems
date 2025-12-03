@@ -7,6 +7,7 @@ using UnityEngine.AddressableAssets;
 
 namespace CrocsItems.Items.Jibbitz
 {
+    [ConfigSection("Items :: Black Heart")]
     public class BlackHeart : ItemBase<BlackHeart>
     {
         public override string ItemName => "Black Heart";
@@ -15,7 +16,7 @@ namespace CrocsItems.Items.Jibbitz
 
         public override string ItemPickupDesc => "While you have a Crocs item, increase health regeneration and maximum health.";
 
-        public override string ItemFullDescription => "While you have a <style=cIsUtility>Crocs</style> item, increase <style=cIsHealing>health regeneration</style> by <style=cIsHealing>1%</style> <style=cStack>(+1% per stack)</style> of your <style=cIsHealing>maximum health</style> and <style=cIsHealing>maximum health</style> by <style=cIsHealing>125</style> <style=cStack>(+125 per stack)</style>.";
+        public override string ItemFullDescription => $"While you have a <style=cIsUtility>Crocs</style> item, increase <style=cIsHealing>health regeneration</style> by <style=cIsHealing>{basePercentHealthRegenerationOfMaximumHealth * 100f}%</style> <style=cStack>(+{stackPercentHealthRegenerationOfMaximumHealth * 100f}% per stack)</style> of your <style=cIsHealing>maximum health</style> and <style=cIsHealing>maximum health</style> by <style=cIsHealing>{baseMaximumHealth}</style> <style=cStack>(+{stackMaximumHealth} per stack)</style>.";
 
         public override string ItemLore => "";
 
@@ -31,6 +32,18 @@ namespace CrocsItems.Items.Jibbitz
 
         public override bool IsCroc => false;
         public override bool IsJibbit => true;
+
+        [ConfigField("Base Percent Health Regeneration Of Maximum Health", "Decimal.", 0.01f)]
+        public static float basePercentHealthRegenerationOfMaximumHealth;
+
+        [ConfigField("Stack Percent Health Regeneration Of Maximum Health", "Decimal.", 0.01f)]
+        public static float stackPercentHealthRegenerationOfMaximumHealth;
+
+        [ConfigField("Base Maximum Health", "", 125f)]
+        public static float baseMaximumHealth;
+
+        [ConfigField("Stack Maximum Health", "", 125f)]
+        public static float stackMaximumHealth;
 
         public override void Init()
         {
@@ -49,8 +62,8 @@ namespace CrocsItems.Items.Jibbitz
             var hasAnyCrocs = Main.HasAnyCrocs(sender) || Main.HasAnyCrocsEquipment(sender);
             if (stack > 0 && hasAnyCrocs)
             {
-                args.baseHealthAdd += 125f * stack;
-                args.baseRegenAdd += 0.01f * sender.maxHealth * stack;
+                args.baseHealthAdd += baseMaximumHealth + stackMaximumHealth * (stack - 1);
+                args.baseRegenAdd += (basePercentHealthRegenerationOfMaximumHealth + stackPercentHealthRegenerationOfMaximumHealth * (stack - 1)) * sender.maxHealth;
             }
         }
 
@@ -323,6 +336,76 @@ namespace CrocsItems.Items.Jibbitz
         localPos = new Vector3(0.66651F, -0.2417F, -0.02912F),
         localAngles = new Vector3(8.86733F, 342.5343F, 37.52561F),
         localScale = new Vector3(0.15695F, 0.15695F, 0.15695F),
+        followerPrefab = blackHeartIDRS,
+        limbMask = LimbFlags.None,
+        followerPrefabAddress = new AssetReferenceGameObject("")
+    }
+
+);
+            /*
+            i.Add("HereticBody",
+
+                                                    new ItemDisplayRule()
+                                                    {
+                                                        ruleType = ItemDisplayRuleType.ParentedPrefab,
+                                                        childName = "FootL",
+                                                        localPos = new Vector3(0.00233F, -0.49076F, 0.15388F),
+                                                        localAngles = new Vector3(1.22992F, 351.0681F, 32.60522F),
+                                                        localScale = new Vector3(0.26568F, 0.26568F, 0.26568F),
+
+                                                        followerPrefab = blackHeartIDRS,
+                                                        limbMask = LimbFlags.None,
+                                                        followerPrefabAddress = new AssetReferenceGameObject("")
+                                                    }
+
+                                                );
+            */
+            // massive desync
+
+            i.Add("FalseSonBody",
+
+                            new ItemDisplayRule()
+                            {
+                                ruleType = ItemDisplayRuleType.ParentedPrefab,
+                                childName = "FootL",
+                                localPos = new Vector3(0.20667F, 0.1483F, 0.0087F),
+                                localAngles = new Vector3(5.05432F, 14.21746F, 166.8227F),
+                                localScale = new Vector3(0.12386F, 0.12386F, 0.12386F),
+
+                                followerPrefab = blackHeartIDRS,
+                                limbMask = LimbFlags.None,
+                                followerPrefabAddress = new AssetReferenceGameObject("")
+                            }
+
+                        );
+
+            i.Add("DroneTechBody",
+
+                            new ItemDisplayRule()
+                            {
+                                ruleType = ItemDisplayRuleType.ParentedPrefab,
+                                childName = "FootL",
+                                localPos = new Vector3(-0.15977F, 0.07978F, -0.0005F),
+                                localAngles = new Vector3(326.3708F, 3.7377F, 255.4335F),
+                                localScale = new Vector3(0.08977F, 0.09184F, 0.08977F),
+
+                                followerPrefab = blackHeartIDRS,
+                                limbMask = LimbFlags.None,
+                                followerPrefabAddress = new AssetReferenceGameObject("")
+                            }
+
+                        );
+
+            i.Add("DrifterBody",
+
+    new ItemDisplayRule()
+    {
+        ruleType = ItemDisplayRuleType.ParentedPrefab,
+        childName = "FootL",
+        localPos = new Vector3(0.01372F, -0.20783F, 0.01289F),
+        localAngles = new Vector3(356.1929F, 339.3168F, 25.92466F),
+        localScale = new Vector3(0.09461F, 0.09461F, 0.09461F),
+
         followerPrefab = blackHeartIDRS,
         limbMask = LimbFlags.None,
         followerPrefabAddress = new AssetReferenceGameObject("")

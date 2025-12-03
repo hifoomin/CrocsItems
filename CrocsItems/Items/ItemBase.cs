@@ -173,6 +173,13 @@ namespace CrocsItems.Items
             return body.inventory.GetItemCount(ItemDef);
         }
 
+        public int GetCountEffective(CharacterBody body)
+        {
+            if (!body || !body.inventory) { return 0; }
+
+            return body.inventory.GetItemCountEffective(ItemDef);
+        }
+
         public string GetConfName()
         {
             ConfigSectionAttribute attribute = this.GetType().GetCustomAttribute<ConfigSectionAttribute>();
