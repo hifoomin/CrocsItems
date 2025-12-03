@@ -14,6 +14,7 @@ Step into comfort, survivors! Enjoy free shoes inspired by Crocs' iconic Classic
 - Jibbitz charms cannot drop naturally and act like white items (can be scrapped, exchanged, removed, etc).
 - Jibbitz charms have a 10% chance to drop from any chest, as long as any player has a croc item. They will not give any bonuses unless the player picking up the Jibbitz charms has a croc item in their inventory.
 - Jibbitz charms will drop from the Shrine of the Crocs if the interactor has any croc item in their inventory.
+- Jibbitz charms will not display on your survivor unless you have their respective Croc item (Crocs Classic => Black Heart, Crocs Sandals => Sweet Treat, Crocs Echo Wave => Squishy Glitter Star).
 
 ## Content
 

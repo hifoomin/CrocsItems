@@ -1,6 +1,6 @@
 # 1.2.0 Patch Notes
 - Added Stat Config
-- Added Item Displays to Heretic, False Son, Drifter and Operator
+- Added Item Displays to False Son, Drifter and Operator
 - Added Conditional Item Displays (Jibbitz no longer appear if you have them without their respective Croc)
 - Made Crocs Sandals and Crocs Echo Wave possible to be Temporary
 - Nerfed Crocs Echo Wave Speed Buff Count To Remove from 2 to 4
